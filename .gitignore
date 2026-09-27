@@ -1,0 +1,13 @@
+build/
+**/build/
+videos/
+*.avi
+*.mp4
+*.mkv
+*.mov
+*.zip
+*.o
+*.a
+*.so
+*.swp
+*~
