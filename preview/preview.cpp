@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include "LightDetector.h"
+#include "ArmorMatcher.h"
 int main(int argc, char** argv)
 {
     const bool checkOnly = argc > 1 && std::string(argv[1]) == "--check";
@@ -18,6 +19,10 @@ int main(int argc, char** argv)
     cv::Mat image;
     cv::Mat mask;
     cv::Mat lightMask;
+    cv::Mat lightMatch;
+    cv::Mat yellowMask;
+    cv::Mat yellowOnly;
+    std::vector<LightBar> lights;
     int frameCount = 0;
     while (capture.read(image)) {
         preprocess_image(image, mask);
@@ -29,24 +34,38 @@ int main(int argc, char** argv)
             std::cerr << "mask 应为与原图同尺寸的 CV_8UC1 图像。\n";
             return 3;
         }
-        light_detector(mask, lightMask);
+        light_detector(mask, lightMask, lights);
         if (lightMask.empty() || lightMask.type() != CV_8UC3 ||
             lightMask.size() != image.size()) {
             std::cerr << "light_detector 应生成与原图同尺寸的 CV_8UC3 轮廓图。\n";
             return 5;
         }
+        armor_match(lightMask, lightMatch, lights);
+        if (lightMatch.empty() || lightMatch.type() != CV_8UC3 ||
+            lightMatch.size() != image.size()) {
+            std::cerr << "armor_match 应生成与原图同尺寸的 CV_8UC3 配对图。\n";
+            return 6;
+        }
+        // 只保留配对图中黄色连线，每帧使用新的黑底避免残留。
+        cv::inRange(lightMatch, cv::Scalar(0, 255, 255),
+                    cv::Scalar(0, 255, 255), yellowMask);
+        yellowOnly = cv::Mat::zeros(lightMatch.size(), lightMatch.type());
+        lightMatch.copyTo(yellowOnly, yellowMask);
         ++frameCount;
         if (checkOnly) {
             std::cout << "读取及预处理成功：" << image.cols << 'x'
                       << image.rows << "，mask 非零像素数："
                       << cv::countNonZero(mask)
-                      << "，轮廓图已生成。\n";
+                      << "，候选灯条数：" << lights.size()
+                      << "，黄色连线像素数：" << cv::countNonZero(yellowMask)
+                      << "，合并图及纯黄色图已生成。\n";
             return 0;
         }
 
         cv::imshow("Original", image);
         cv::imshow("Mask", mask);
-        cv::imshow("Contours", lightMask);
+        cv::imshow("Matches", lightMatch);
+        cv::imshow("YellowOnly", yellowOnly);
         if (cv::waitKey(30) == 27) {
             break;
         }

@@ -5,7 +5,7 @@ void preprocess_image(const cv::Mat& image, cv::Mat& mask)
 {
     cv::Mat hsv;
     cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV);
-    const cv::Scalar lowerBound(90, 80, 150);
+    const cv::Scalar lowerBound(70, 50, 150);
     const cv::Scalar upperBound(130, 255, 255);
 
     cv::inRange(hsv, lowerBound, upperBound, mask);  

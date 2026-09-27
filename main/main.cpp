@@ -24,6 +24,7 @@ else
 cv::Mat image;
 cv::Mat mask;
 cv::Mat lightMask;
+std::vector<LightBar> lights;
 cv::Mat lightMatch;
 cv::Mat handleImage;
 
@@ -33,10 +34,10 @@ while (capture.read(image))
 preprocess_image(image,mask);
 
 //灯光识别
-light_detector(mask,lightMask);
+light_detector(mask,lightMask,lights);
 
 //灯光匹配
-armor_match(lightMask,lightMatch);
+armor_match(lightMask,lightMatch,lights);
 
 //绘制显示
 draw_display(lightMatch,handleImage);

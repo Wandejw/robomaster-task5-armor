@@ -3,8 +3,10 @@
 #include <vector>
 #include <algorithm>
 
-void light_detector(const cv::Mat& mask, cv::Mat& lightMask)
+void light_detector(const cv::Mat& mask, cv::Mat& lightMask,std::vector<LightBar>& lights)
+// 识别灯条轮廓并绘制到 lightMask 上，同时将识别到的灯条信息存储到 lights 向量中
 {
+    lights.clear();
     std::vector<std::vector<cv::Point>> contours;
 
     cv::findContours(mask,contours,cv::RETR_EXTERNAL,cv::CHAIN_APPROX_SIMPLE);
@@ -30,7 +32,7 @@ if (width <= 0.0f)
 
 float ratio = length / width;
 
-if (ratio < 2.0f) 
+if (ratio < 1.5f|| ratio > 3.0f) 
 {
     continue;
 }
@@ -40,19 +42,26 @@ double contourArea = cv::contourArea(contour);
 double rectArea = length * width;
 double fillRatio = contourArea / rectArea;
 //计算轮廓面积与矩形面积的比值
-if (fillRatio < 0.45) 
+if (fillRatio < 0.5) 
 {
     continue;
 }
 // 排除轮廓面积与矩形面积比值过小的区域
+LightBar light;
 
+light.center = rect.center;
+light.length = length;
+light.width  = width;
+light.rect   = rect;
+// 将识别到的灯条信息存储到 lights 向量中
+lights.push_back(light);
     cv::Point2f vertices[4];
 //获取矩形的四个顶点
 
     rect.points(vertices);
 //绘制矩形的四条边
 
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i < 4; i++)
     {
         cv::line(lightMask,vertices[i],vertices[(i + 1) % 4],cv::Scalar(0, 0, 255),1);
 //红色绘制矩形边，厚度为1
@@ -60,4 +69,3 @@ if (fillRatio < 0.45)
 }
 
 }
-
