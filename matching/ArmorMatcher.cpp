@@ -3,8 +3,46 @@
 #include <cmath>  // std::abs 的浮点数版本
 #include <opencv2/imgproc.hpp>  // cv::line
 
-void armor_match(const cv::Mat& lightMask, cv::Mat& lightMatch,const std::vector<LightBar>& lights)
+// 取得旋转矩形长边的单位方向，供两根灯条复用。
+static cv::Point2f get_long_direction(const cv::RotatedRect& rect)
 {
+    // 获取旋转矩形的四个顶点
+    cv::Point2f vertices[4];
+    rect.points(vertices);
+    // 计算两条边的向量
+    cv::Point2f edgeA = vertices[1] - vertices[0];
+    cv::Point2f edgeB = vertices[2] - vertices[1];
+    // 计算两条边的长度平方
+    float edgeALengthSquared = edgeA.x * edgeA.x + edgeA.y * edgeA.y;
+    float edgeBLengthSquared = edgeB.x * edgeB.x + edgeB.y * edgeB.y;
+    
+    cv::Point2f longEdge;
+    // 选择较长的边作为长边
+    if (edgeALengthSquared >= edgeBLengthSquared)
+    {
+        longEdge = edgeA;
+    }
+    else
+    {
+        longEdge = edgeB;
+    }
+    // 计算长边的长度
+    float edgeLength = std::sqrt(longEdge.x * longEdge.x + longEdge.y * longEdge.y);
+    if (edgeLength <= 0.0f)
+    {
+        return cv::Point2f(0.0f, 0.0f);
+    }
+    // 归一化长边向量，得到单位方向
+    cv::Point2f direction;
+    direction.x = longEdge.x / edgeLength;
+    direction.y = longEdge.y / edgeLength;
+    return direction;
+}
+
+void armor_match(const cv::Mat& lightMask, cv::Mat& lightMatch,const std::vector<LightBar>& lights,std::vector<cv::RotatedRect>& armorRects)
+{
+// 每帧清空结果，避免上一帧的装甲板残留。
+armorRects.clear();
 lightMatch = lightMask.clone();
 for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
 {
@@ -21,36 +59,21 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
 
         // 平均长度
         float averageLength = (lights[i].length + lights[j].length) / 2.0f;
-        
-        // 取第一根灯条旋转矩形的四个顶点
-        cv::Point2f vertices[4];
-        lights[i].rect.points(vertices);
-
-// 两条相邻边：其中一条是长边
-        cv::Point2f edgeA = vertices[1] - vertices[0];
-        cv::Point2f edgeB = vertices[2] - vertices[1];
-
-// dot(自身) 得到边长的平方，比较后选出长边
-        float edgeALengthSquared = edgeA.x * edgeA.x + edgeA.y * edgeA.y;
-        float edgeBLengthSquared = edgeB.x * edgeB.x + edgeB.y * edgeB.y;
-        cv::Point2f longEdge;
-        if (edgeALengthSquared >= edgeBLengthSquared)
-        {
-           longEdge = edgeA;
-        }
-        else
-        {
-           longEdge = edgeB;
-        }
-
-// 把长边变成长度为 1 的方向向量
-        float edgeLength = std::sqrt(longEdge.x * longEdge.x + longEdge.y * longEdge.y);
-         if (edgeLength <= 0.0f)
+        // 获取两根灯条的长边方向
+        cv::Point2f direction = get_long_direction(lights[i].rect);
+        cv::Point2f secondDirection = get_long_direction(lights[j].rect);
+        // 任意一根灯条的长边方向为零向量，则跳过当前组合
+        if ((direction.x == 0.0f && direction.y == 0.0f) ||(secondDirection.x == 0.0f && secondDirection.y == 0.0f))
         {
             continue;
         }
-        //不太会，抄的公式
-        cv::Point2f direction = longEdge * (1.0f / edgeLength);
+
+        // 排除长边方向差异过大的组合。
+        float directionSimilarity = std::abs(direction.x * secondDirection.x + direction.y * secondDirection.y);
+        if (directionSimilarity < 0.9f)
+        {
+            continue;
+        }
 // 从第一根灯条中心指向第二根灯条中心
         cv::Point2f centerDelta = lights[j].center - lights[i].center;
 // 沿长边方向的错位：点积得到投影长度
@@ -68,14 +91,38 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
        }
 
 // 侧向间距太小或太大：排除近似共线及距离过远的组合
-       if (sideRatio < 0.5f || sideRatio > 2.3f)
+       if (sideRatio < 0.5f || sideRatio > 2.8f)
         {
             continue;
         }
-        // 如果满足条件，则认为这两个灯条可以组成装甲板，绘制连接线，颜色为黄色，厚度为2
-        cv::line(lightMatch,lights[i].center,lights[j].center, cv::Scalar(0, 255, 255),2);
+        // 满足条件后，生成装甲板候选矩形。
+        // 取两根灯条各自的四个顶点
+       cv::Point2f firstPoints[4];
+       cv::Point2f secondPoints[4];
+       lights[i].rect.points(firstPoints);
+       lights[j].rect.points(secondPoints);
+
+        // 把两根灯条的 8 个顶点放进同一个列表
+        std::vector<cv::Point2f> allPoints;
+        for (int k = 0; k < 4; k++)
         {
-            continue;
+        allPoints.push_back(firstPoints[k]);
+        allPoints.push_back(secondPoints[k]);
+        }
+
+        // 求包住这 8 个点的最小旋转矩形
+        cv::RotatedRect armorRect = cv::minAreaRect(allPoints);
+        armorRects.push_back(armorRect);
+
+        // 取出这个矩形的四个顶点
+        cv::Point2f armorPoints[4];
+        armorRect.points(armorPoints);
+
+        // 依次连接四个顶点，画出黄色框
+        for (int k = 0; k < 4; ++k)
+        {
+                // 画线连接，黄色，线宽为 2
+        cv::line(lightMatch,armorPoints[k],armorPoints[(k + 1) % 4],cv::Scalar(0, 255, 255),2);
         }
     }  
 }

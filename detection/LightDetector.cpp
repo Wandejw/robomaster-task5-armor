@@ -32,7 +32,7 @@ if (width <= 0.0f)
 
 float ratio = length / width;
 
-if (ratio < 1.5f|| ratio > 3.0f) 
+if (ratio < 1.5f|| ratio > 6.0f) 
 {
     continue;
 }
@@ -42,11 +42,12 @@ double contourArea = cv::contourArea(contour);
 double rectArea = length * width;
 double fillRatio = contourArea / rectArea;
 //计算轮廓面积与矩形面积的比值
-if (fillRatio < 0.5) 
+if (fillRatio < 0.6) 
 {
     continue;
 }
 // 排除轮廓面积与矩形面积比值过小的区域
+// 通过以上条件筛选出的轮廓被认为是灯条，接下来将其信息存储到 lights 向量中，并绘制到 lightMask 上
 LightBar light;
 
 light.center = rect.center;

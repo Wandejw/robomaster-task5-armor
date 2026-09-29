@@ -8,8 +8,9 @@ add_executable(preprocess_preview
     ../processing/ImageProcessor.cpp
     ../detection/LightDetector.cpp
     ../matching/ArmorMatcher.cpp
+    ../control/VideoControl.cpp
 )
 target_include_directories(preprocess_preview PRIVATE
-    ../processing ../detection ../matching ${OpenCV_INCLUDE_DIRS}
+    ../processing ../detection ../matching ../control ${OpenCV_INCLUDE_DIRS}
 )
 target_link_libraries(preprocess_preview PRIVATE ${OpenCV_LIBS})

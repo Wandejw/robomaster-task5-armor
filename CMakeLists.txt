@@ -14,10 +14,11 @@ add_executable(task5_armor
     detection/LightDetector.cpp
     matching/ArmorMatcher.cpp
     InputHandle/InputHandle.cpp
+    control/VideoControl.cpp
 )
 
 target_include_directories(task5_armor PRIVATE
     ${OpenCV_INCLUDE_DIRS}
-    common processing detection matching InputHandle
+    common processing detection matching InputHandle control
 )
 target_link_libraries(task5_armor PRIVATE ${OpenCV_LIBS})
