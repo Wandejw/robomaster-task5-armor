@@ -2,7 +2,8 @@
 #include <algorithm>  // std::min、std::max
 #include <cmath>  // std::abs 的浮点数版本
 #include <opencv2/imgproc.hpp>  // cv::line
-
+#include <cstddef>// 该函数用于匹配灯条，生成装甲板候选矩形，并在 lightMatch 上绘制装甲板轮廓。
+#include <vector>  
 // 取得旋转矩形长边的单位方向，供两根灯条复用。
 static cv::Point2f get_long_direction(const cv::RotatedRect& rect)
 {
@@ -44,8 +45,18 @@ void armor_match(const cv::Mat& lightMask, cv::Mat& lightMatch,const std::vector
 // 每帧清空结果，避免上一帧的装甲板残留。
 armorRects.clear();
 lightMatch = lightMask.clone();
+
+struct PairCandidate
+{
+    std::size_t first;std::size_t second;double loss;
+    // 旋转矩形，表示装甲板候选区域
+    cv::RotatedRect rect;
+};
+
+std::vector<PairCandidate> pairCandidates;
 for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
 {
+
     for (std::size_t j = i + 1; j < lights.size(); ++j)
     {
         float shorterLength = std::min(lights[i].length, lights[j].length);
@@ -95,6 +106,9 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
         {
             continue;
         }
+        
+    double losescore=0;
+       losescore=alongRatio*8+abs(sideRatio-1.5)+abs(directionSimilarity-1)*10+abs(lengthRatio-1)*10 ;
         // 满足条件后，生成装甲板候选矩形。
         // 取两根灯条各自的四个顶点
        cv::Point2f firstPoints[4];
@@ -111,23 +125,42 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
         }
 
         // 求包住这 8 个点的最小旋转矩形
+        // cv::minAreaRect 函数返回一个 cv::RotatedRect 对象，表示最小外接旋转矩形
         cv::RotatedRect armorRect = cv::minAreaRect(allPoints);
-        armorRects.push_back(armorRect);
-
-        // 取出这个矩形的四个顶点
-        cv::Point2f armorPoints[4];
-        armorRect.points(armorPoints);
-
-        // 依次连接四个顶点，画出黄色框
-        for (int k = 0; k < 4; ++k)
-        {
-                // 画线连接，黄色，线宽为 2
-        cv::line(lightMatch,armorPoints[k],armorPoints[(k + 1) % 4],cv::Scalar(0, 255, 255),2);
-        }
+        pairCandidates.push_back({i, j, losescore, armorRect});
     }  
 }
+// 对 pairCandidates 按照损失分数进行升序排序，损失分数越低的组合越优先考虑
+// 使用 lambda 表达式作为比较函数，比较两个 PairCandidate 的 loss 成员
+std::sort(pairCandidates.begin(), pairCandidates.end(),
+          [](const PairCandidate& a, const PairCandidate& b) 
+          {
+              return a.loss < b.loss;
+          });
+// 使用一个布尔向量记录每个灯条是否已经被使用，初始值为 false
+std::vector<bool> used(lights.size(), false);
+for (const PairCandidate& candidate : pairCandidates)
+{
+    // 如果任意一根灯条已经被使用，则跳过当前组合
+    if (used[candidate.first] || used[candidate.second])
+    {
+        continue;
+    }
+
+    // 标记当前组合的两根灯条为已使用
+    used[candidate.first] = true;
+    used[candidate.second] = true;
+    // 将装甲板候选矩形加入结果列表 armorRects
+    armorRects.push_back(candidate.rect);
+// 绘制装甲板轮廓到 lightMatch 上
+    cv::Point2f armorPoints[4];
+    // 获取装甲板候选矩形的四个顶点
+    candidate.rect.points(armorPoints);
+    for (int k = 0; k < 4; ++k)
+    {
+        cv::line(lightMatch, armorPoints[k], armorPoints[(k + 1) % 4],
+                 cv::Scalar(0, 255, 255), 2);
+    }
 }
-
-
-
+}
 

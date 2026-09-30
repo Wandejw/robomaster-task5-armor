@@ -14,3 +14,4 @@ target_include_directories(preprocess_preview PRIVATE
     ../processing ../detection ../matching ../control ${OpenCV_INCLUDE_DIRS}
 )
 target_link_libraries(preprocess_preview PRIVATE ${OpenCV_LIBS})
+set_target_properties(preprocess_preview PROPERTIES OUTPUT_NAME test)

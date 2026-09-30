@@ -23,7 +23,9 @@ if (!success)
 }
 else
 {
+    // 获取视频总帧数
 int totalFrames = static_cast<int>(capture.get(cv::CAP_PROP_FRAME_COUNT));
+// 初始化进度条
 init_progress_bar("Result", totalFrames);
 
 cv::Mat image;
@@ -36,7 +38,9 @@ cv::Mat handleImage;
 cv::VideoWriter writer;
 while (true)
 {
-    if (!paused)
+    // 如果未暂停，则读取下一帧并进行处理
+    bool seekRequested = seek_progress_bar(capture, "Result");
+    if (!paused || seekRequested)
     {
         if (!capture.read(image))
         {
@@ -52,6 +56,7 @@ while (true)
 
 //绘制显示,
         draw_display(image, armorRects, handleImage);
+        update_progress_bar(capture, "Result");
 
 //显示图像到result窗口
     }

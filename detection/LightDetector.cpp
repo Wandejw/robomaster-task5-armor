@@ -42,7 +42,7 @@ double contourArea = cv::contourArea(contour);
 double rectArea = length * width;
 double fillRatio = contourArea / rectArea;
 //计算轮廓面积与矩形面积的比值
-if (fillRatio < 0.6) 
+if (fillRatio < 0.65) 
 {
     continue;
 }
@@ -54,13 +54,31 @@ light.center = rect.center;
 light.length = length;
 light.width  = width;
 light.rect   = rect;
-// 将识别到的灯条信息存储到 lights 向量中
-lights.push_back(light);
-    cv::Point2f vertices[4];
-//获取矩形的四个顶点
+
+cv::Point2f vertices[4];
+rect.points(vertices);
+//绘制矩形的四条边
+
+cv::Point2f edgeA = vertices[1] - vertices[0];
+cv::Point2f edgeB = vertices[2] - vertices[1];
+float lengthA2 = edgeA.dot(edgeA);
+float lengthB2 = edgeB.dot(edgeB);
+//计算两条边的长度平方
+cv::Point2f longEdge = (lengthA2 >= lengthB2) ? edgeA : edgeB;
+//选择较长的边作为长边
+// 相对竖直方向偏移超过 45°，跳过这个候选灯条
+
+if (std::abs(longEdge.x) > std::abs(longEdge.y))
+{ 
+    continue;
+}
 
     rect.points(vertices);
-//绘制矩形的四条边
+
+// 将识别到的灯条信息存储到 lights 向量中
+lights.push_back(light);
+   
+
 
     for (int i = 0; i < 4; i++)
     {

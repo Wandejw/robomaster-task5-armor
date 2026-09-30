@@ -20,6 +20,7 @@ int main(int argc, char** argv)
     int totalFrames = static_cast<int>(capture.get(cv::CAP_PROP_FRAME_COUNT));
     if (!checkOnly) {
         init_progress_bar("Original", totalFrames);
+        init_progress_bar("Matches", totalFrames);
     }
 
     cv::Mat image;
@@ -33,7 +34,14 @@ int main(int argc, char** argv)
     int frameCount = 0;
     bool paused = false;
     while (true) {
-        if (!paused) {
+        bool seekRequested = false;
+        if (!checkOnly) {
+            seekRequested = seek_progress_bar(capture, "Original");
+            if (!seekRequested) {
+                seekRequested = seek_progress_bar(capture, "Matches");
+            }
+        }
+        if (!paused || seekRequested) {
             if (!capture.read(image)) {
                 break;
             }
@@ -63,6 +71,10 @@ int main(int argc, char** argv)
                         cv::Scalar(0, 255, 255), yellowMask);
             yellowOnly = cv::Mat::zeros(lightMatch.size(), lightMatch.type());
             lightMatch.copyTo(yellowOnly, yellowMask);
+            if (!checkOnly) {
+                update_progress_bar(capture, "Original");
+                update_progress_bar(capture, "Matches");
+            }
             ++frameCount;
             if (checkOnly) {
                 std::cout << "读取及预处理成功：" << image.cols << 'x'
