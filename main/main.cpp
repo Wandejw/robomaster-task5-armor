@@ -42,14 +42,27 @@ while (true)
     bool seekRequested = seek_progress_bar(capture, "Result");
     if (!paused || seekRequested)
     {
+        if (seekRequested)
+        {
+            lights.clear();
+        }
         if (!capture.read(image))
         {
             break; 
         }
+        
         preprocess_image(image,mask);
+
+        cv::namedWindow("Mask", cv::WINDOW_NORMAL);
+        cv::resizeWindow("Mask", 900, 700);
+        cv::imshow("Mask", mask);
+
 
 //灯光识别
         light_detector(mask,lightMask,lights);
+        cv::namedWindow("Light Mask", cv::WINDOW_NORMAL);   
+        cv::resizeWindow("Light Mask", 900, 700);
+        cv::imshow("Light Mask", lightMask);
 
 //灯光匹配
         armor_match(lightMask,lightMatch,lights,armorRects);
@@ -62,6 +75,8 @@ while (true)
     }
 
     // 暂停时也继续显示上一帧、接收按键。
+    cv::namedWindow("Result", cv::WINDOW_NORMAL);   
+    cv::resizeWindow("Result", 900, 700);
     cv::imshow("Result", handleImage);
     int key = cv::waitKey(30);
 

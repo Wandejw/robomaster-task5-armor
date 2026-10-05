@@ -63,7 +63,7 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
         float longerLength  = std::max(lights[i].length, lights[j].length);
         float lengthRatio   = shorterLength / longerLength;
         // 排除灯条长度差异过大的情况
-        if (lengthRatio < 0.7f)
+        if (lengthRatio < 0.5f)
         {
             continue;
         }
@@ -96,19 +96,19 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
        float sideRatio  = sideDistance / averageLength;
         
 // 沿长边方向错位太大，跳过当前组合
-       if (alongRatio > 0.5f)
+       if (alongRatio > 0.9f)
        {
             continue;
        }
 
 // 侧向间距太小或太大：排除近似共线及距离过远的组合
-       if (sideRatio < 0.5f || sideRatio > 2.8f)
+       if (sideRatio < 1.65f || sideRatio > 4.6f)
         {
             continue;
         }
         
     double losescore=0;
-       losescore=alongRatio*8+abs(sideRatio-1.5)+abs(directionSimilarity-1)*10+abs(lengthRatio-1)*10 ;
+       losescore=alongRatio*1+abs(sideRatio-2.49)+abs(directionSimilarity-1)*5+abs(lengthRatio-1)*2 ;
         // 满足条件后，生成装甲板候选矩形。
         // 取两根灯条各自的四个顶点
        cv::Point2f firstPoints[4];
@@ -163,4 +163,3 @@ for (const PairCandidate& candidate : pairCandidates)
     }
 }
 }
-

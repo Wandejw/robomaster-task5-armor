@@ -11,7 +11,7 @@ void preprocess_image(const cv::Mat& image, cv::Mat& mask)
     cv::inRange(hsv, lowerBound, upperBound, mask);
     // 先膨胀再腐蚀：尝试连接竖直灯条中的短间断。
     const cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(1, 5));
-    // 创建一个 1x5 的矩形结构元素，用于膨胀和腐蚀操作;
+    // 创建一个 1x5 的矩形结构元素，用于膨胀和腐蚀操作。
     cv::Mat dilated;
     cv::dilate(mask, dilated, kernel);
     //腐蚀操作，使用相同的结构元素

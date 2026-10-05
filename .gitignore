@@ -11,3 +11,33 @@ videos/
 *.so
 *.swp
 *~
+
+# CMake and compiler outputs
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+cmake_install.cmake
+Makefile
+*.obj
+*.out
+*.exe
+*.dll
+*.dylib
+*.pdb
+*.d
+
+# Editor caches, temporary and backup files
+.cache/
+__pycache__/
+*.pyc
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.swp
+*.swo
+.idea/
+.vs/
+.vscode/ipch/
+*.code-workspace
