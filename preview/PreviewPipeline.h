@@ -10,10 +10,11 @@
 struct PreviewParams {
     int hMin = 80, hMax = 130, sMin = 30, sMax = 255, vMin = 150, vMax = 255;
     int kernelWidth = 1, kernelHeight = 5;
-    int minAspect = 150, maxAspect = 901;
-    int minFill = 45, strongFill = 45;
+    int minAspect = 133, maxAspect = 1001;
+    int minLength = 7;
+    int minFill = 41, strongFill = 41;
     int previousLength = 70, previousDistance = 50;
-    int maxTilt = 25;
+    int maxTilt = 45;
     int pairLength = 50, pairDirection = 90;
     int maxAlong = 90, minSide = 165, maxSide = 460;
     int alongWeight = 1, targetSide = 249, directionWeight = 5, lengthWeight = 2;
@@ -56,7 +57,7 @@ inline void preview_detect(const cv::Mat& mask, cv::Mat& lightMask,
         cv::RotatedRect rect = cv::minAreaRect(contour);
         float length = std::max(rect.size.width, rect.size.height);
         float width = std::min(rect.size.width, rect.size.height);
-        if (width <= 0.0f) continue;
+        if (width <= 0.0f || length < p.minLength) continue;
         float aspect = length / width;
         if (aspect < p.minAspect / 100.0f || aspect > p.maxAspect / 100.0f)
             continue;

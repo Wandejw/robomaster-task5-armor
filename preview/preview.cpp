@@ -41,6 +41,7 @@ int main(int argc, char** argv)
         slider("V上限：最高亮度", params.vMax, 255);
         slider("核宽：横向连接范围", params.kernelWidth, 21);
         slider("核高：竖向连接范围", params.kernelHeight, 21);
+        slider("灯条最短长度：像素", params.minLength, 40);
         slider("灯条长宽比下限：数值除以100", params.minAspect, 1000);
         slider("灯条长宽比上限：数值除以100", params.maxAspect, 1500);
         slider("填充率下限：轮廓占矩形百分比", params.minFill, 100);

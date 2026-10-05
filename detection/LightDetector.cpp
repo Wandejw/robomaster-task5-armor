@@ -29,14 +29,14 @@ for (const auto& contour : contours)
     float width  = std::min(rect.size.width, rect.size.height);
 //获取矩形的长宽
 
-if (width <= 0.0f) 
+if (width <= 0.0f || length < 7.0f)
 {
     continue;
 }
 
 float ratio = length / width;
 
-if (ratio < 1.5f|| ratio > 9.01f) 
+if (ratio < 1.33f|| ratio > 10.01f)
 {
     continue;
 }
@@ -46,7 +46,7 @@ double contourArea = cv::contourArea(contour);
 double rectArea = length * width;
 double fillRatio = contourArea / rectArea;
 //计算轮廓面积与矩形面积的比值
-if (fillRatio < 0.45) 
+if (fillRatio < 0.41)
 {
     continue;
 }
@@ -71,17 +71,17 @@ float lengthB2 = edgeB.dot(edgeB);
 //计算两条边的长度平方
 cv::Point2f longEdge = (lengthA2 >= lengthB2) ? edgeA : edgeB;
 //选择较长的边作为长边
-// 相对竖直方向偏移超过 25°，跳过这个候选灯条
+// 相对竖直方向偏移超过 45°，跳过这个候选灯条
 
 // 计算灯条的填充率
-if (fillRatio < 0.45) 
+if (fillRatio < 0.41)
 {
     bool matchedPreviousStrong = false;
 // 检查上一帧中是否有强候选灯条与当前灯条匹配
     for (const LightBar& previous : previousLights) 
     {
-        // 如果上一帧的灯条填充率小于 0.45，则认为它是弱候选，不能继续担保下一帧
-        if (previous.fillRatio < 0.45f)
+        // 如果上一帧的灯条填充率小于 0.41，则认为它是弱候选，不能继续担保下一帧
+        if (previous.fillRatio < 0.41f)
          {
             continue;  
         }
@@ -108,7 +108,7 @@ if (fillRatio < 0.45)
 }
 float tiltDegrees = std::atan2(std::abs(longEdge.x), std::abs(longEdge.y))
                     * 180.0f / static_cast<float>(CV_PI);
-if (tiltDegrees > 25.0f)
+if (tiltDegrees > 45.0f)
 { 
     continue;
 }
@@ -126,5 +126,4 @@ lights.push_back(light);
 //红色绘制矩形边，厚度为1
     }
 }
-
 }
