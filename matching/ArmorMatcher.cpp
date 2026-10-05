@@ -1,4 +1,5 @@
 #include "ArmorMatcher.h"
+#include "../common/PairContinuity.h"
 #include <algorithm>  // std::min、std::max
 #include <cmath>  // std::abs 的浮点数版本
 #include <opencv2/imgproc.hpp>  // cv::line
@@ -40,7 +41,11 @@ static cv::Point2f get_long_direction(const cv::RotatedRect& rect)
     return direction;
 }
 
-void armor_match(const cv::Mat& lightMask, cv::Mat& lightMatch,const std::vector<LightBar>& lights,std::vector<cv::RotatedRect>& armorRects)
+void armor_match(const cv::Mat& lightMask, cv::Mat& lightMatch,
+                 const std::vector<LightBar>& lights,
+                 std::vector<cv::RotatedRect>& armorRects,
+                 const std::vector<cv::RotatedRect>& previousArmorRects,
+                 const std::vector<cv::RotatedRect>& olderArmorRects)
 {
 // 每帧清空结果，避免上一帧的装甲板残留。
 armorRects.clear();
@@ -79,12 +84,8 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
             continue;
         }
 
-        // 排除长边方向差异过大的组合。
+        // 比较两根灯条长边方向。
         float directionSimilarity = std::abs(direction.x * secondDirection.x + direction.y * secondDirection.y);
-        if (directionSimilarity < 0.9f)
-        {
-            continue;
-        }
 // 从第一根灯条中心指向第二根灯条中心
         cv::Point2f centerDelta = lights[j].center - lights[i].center;
 // 沿长边方向的错位：点积得到投影长度
@@ -95,20 +96,12 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
        float alongRatio = alongDistance / averageLength;
        float sideRatio  = sideDistance / averageLength;
         
-// 沿长边方向错位太大，跳过当前组合
-       if (alongRatio > 0.9f)
-       {
-            continue;
-       }
-
 // 侧向间距太小或太大：排除近似共线及距离过远的组合
-       if (sideRatio < 1.65f || sideRatio > 4.6f)
+       if (sideRatio < 1.27f || sideRatio > 4.6f)
         {
             continue;
         }
         
-    double losescore=0;
-       losescore=alongRatio*1+abs(sideRatio-2.49)+abs(directionSimilarity-1)*5+abs(lengthRatio-1)*2 ;
         // 满足条件后，生成装甲板候选矩形。
         // 取两根灯条各自的四个顶点
        cv::Point2f firstPoints[4];
@@ -126,7 +119,19 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
 
         // 求包住这 8 个点的最小旋转矩形
         // cv::minAreaRect 函数返回一个 cv::RotatedRect 对象，表示最小外接旋转矩形
-        cv::RotatedRect armorRect = cv::minAreaRect(allPoints);
+       cv::RotatedRect armorRect = cv::minAreaRect(allPoints);
+        bool matchesPrevious = matches_previous_pair(
+            armorRect, previousArmorRects, olderArmorRects, 0.7f, 0.5f);
+        bool normalGeometry = directionSimilarity >= 0.88f && alongRatio <= 1.45f;
+        bool continuedGeometry = matchesPrevious && directionSimilarity >= 0.75f && alongRatio <= 2.0f;
+        if (!normalGeometry && !continuedGeometry)
+        {
+            continue;
+        }
+        double losescore = alongRatio * 3 + std::abs(sideRatio - 2.90f) * 3 +
+                           std::abs(directionSimilarity - 1.0f) * 5 +
+                           std::abs(lengthRatio - 1.0f) * 2;
+        if (matchesPrevious) losescore -= 3.0;
         pairCandidates.push_back({i, j, losescore, armorRect});
     }  
 }

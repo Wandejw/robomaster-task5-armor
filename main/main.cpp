@@ -33,6 +33,8 @@ cv::Mat mask;
 cv::Mat lightMask;
 std::vector<LightBar> lights;
 std::vector<cv::RotatedRect> armorRects;
+std::vector<cv::RotatedRect> previousArmorRects;
+std::vector<cv::RotatedRect> olderArmorRects;
 cv::Mat lightMatch;
 cv::Mat handleImage;
 cv::VideoWriter writer;
@@ -45,6 +47,8 @@ while (true)
         if (seekRequested)
         {
             lights.clear();
+            previousArmorRects.clear();
+            olderArmorRects.clear();
         }
         if (!capture.read(image))
         {
@@ -65,7 +69,10 @@ while (true)
         cv::imshow("Light Mask", lightMask);
 
 //灯光匹配
-        armor_match(lightMask,lightMatch,lights,armorRects);
+        armor_match(lightMask,lightMatch,lights,armorRects,
+                    previousArmorRects,olderArmorRects);
+        olderArmorRects = previousArmorRects;
+        previousArmorRects = armorRects;
 
 //绘制显示,
         draw_display(image, armorRects, handleImage);
