@@ -3,6 +3,7 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 void light_detector(const cv::Mat& mask, cv::Mat& lightMask,std::vector<LightBar>& lights)
 // 识别灯条轮廓并绘制到 lightMask 上，同时将识别到的灯条信息存储到 lights 向量中
@@ -91,4 +92,19 @@ lights.push_back(light);
 //红色绘制矩形边，厚度为1
     }
 }
+}
+
+void light_detector_dual(const cv::Mat& mask, cv::Mat& lightMask,
+                         std::vector<LightBar>& lights)
+{
+    cv::Mat blueMask, redMask, blueDraw, redDraw;
+    cv::compare(mask, 255, blueMask, cv::CMP_EQ);
+    cv::compare(mask, 128, redMask, cv::CMP_EQ);
+    std::vector<LightBar> blueLights, redLights;
+    light_detector(blueMask, blueDraw, blueLights);
+    light_detector(redMask, redDraw, redLights);
+    for (auto& light : redLights) light.isRed = true;
+    lights = std::move(blueLights);
+    lights.insert(lights.end(), redLights.begin(), redLights.end());
+    cv::bitwise_or(blueDraw, redDraw, lightMask);
 }

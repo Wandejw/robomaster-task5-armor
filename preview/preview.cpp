@@ -9,7 +9,7 @@ int main(int argc, char** argv)
 {
     const bool checkOnly = argc > 1 && std::string(argv[1]) == "--check";
     const std::string videoPath =
-        "/home/wandejw/桌面/rp作业/task5/drone_blue3.blue-only.avi";
+        "/home/wandejw/桌面/rp作业/task5/drone_blue3.avi";
     cv::VideoCapture capture(videoPath);
     if (!capture.isOpened()) {
         std::cerr << "无法打开视频：" << videoPath << '\n';
@@ -110,7 +110,7 @@ int main(int argc, char** argv)
                     std::vector<cv::RotatedRect> warmupRects;
                     if (!capture.read(warmupImage)) break;
                     preview_preprocess(warmupImage, warmupMask, params);
-                    preview_detect(warmupMask, warmupLightMask, warmupLights, params);
+                    preview_detect_dual(warmupMask, warmupLightMask, warmupLights, params);
                     preview_match(warmupLightMask, warmupMatch, warmupLights,
                                   warmupRects, params, armorRects,
                                   previousArmorForCurrentFrame);
@@ -133,7 +133,7 @@ int main(int argc, char** argv)
                 std::cerr << "mask 应为与原图同尺寸的 CV_8UC1 图像。\n";
                 return 3;
             }
-            preview_detect(mask, lightMask, lights, params);
+            preview_detect_dual(mask, lightMask, lights, params);
             if (lightMask.empty() || lightMask.type() != CV_8UC3 ||
                 lightMask.size() != image.size()) {
                 std::cerr << "light_detector 应生成与原图同尺寸的 CV_8UC3 轮廓图。\n";

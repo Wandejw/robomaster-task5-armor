@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+#include <utility>
 
 // Values are stored as integers so OpenCV trackbars can edit them directly.
 struct PreviewParams {
@@ -29,10 +30,21 @@ inline void preview_preprocess(const cv::Mat& image, cv::Mat& mask,
     cv::cvtColor(image, hsv, cv::COLOR_BGR2HSV);
     cv::inRange(hsv, cv::Scalar(p.hMin, p.sMin, p.vMin),
                 cv::Scalar(p.hMax, p.sMax, p.vMax), mask);
+    cv::Mat redLow, redHigh;
+    cv::inRange(hsv, cv::Scalar(0, p.sMin, p.vMin),
+                cv::Scalar(20, p.sMax, p.vMax), redLow);
+    cv::inRange(hsv, cv::Scalar(170, p.sMin, p.vMin),
+                cv::Scalar(179, p.sMax, p.vMax), redHigh);
+    cv::Mat redMask;
+    cv::bitwise_or(redLow, redHigh, redMask);
     cv::Mat kernel = cv::getStructuringElement(
         cv::MORPH_RECT, cv::Size(std::max(1, p.kernelWidth),
                                  std::max(1, p.kernelHeight)));
     cv::morphologyEx(mask, mask, cv::MORPH_CLOSE, kernel);
+    cv::morphologyEx(redMask, redMask, cv::MORPH_CLOSE, kernel);
+    cv::Mat blueMask = mask.clone();
+    mask.setTo(128, redMask);
+    mask.setTo(255, blueMask);
 }
 
 inline cv::Point2f preview_long_direction(const cv::RotatedRect& rect)
@@ -86,6 +98,21 @@ inline void preview_detect(const cv::Mat& mask, cv::Mat& lightMask,
     }
 }
 
+inline void preview_detect_dual(const cv::Mat& mask, cv::Mat& lightMask,
+                                std::vector<LightBar>& lights, const PreviewParams& p)
+{
+    cv::Mat blueMask, redMask, blueDraw, redDraw;
+    cv::compare(mask, 255, blueMask, cv::CMP_EQ);
+    cv::compare(mask, 128, redMask, cv::CMP_EQ);
+    std::vector<LightBar> blueLights, redLights;
+    preview_detect(blueMask, blueDraw, blueLights, p);
+    preview_detect(redMask, redDraw, redLights, p);
+    for (auto& light : redLights) light.isRed = true;
+    lights = std::move(blueLights);
+    lights.insert(lights.end(), redLights.begin(), redLights.end());
+    cv::bitwise_or(blueDraw, redDraw, lightMask);
+}
+
 inline void preview_match(const cv::Mat& lightMask, cv::Mat& lightMatch,
                           const std::vector<LightBar>& lights,
                           std::vector<cv::RotatedRect>& armorRects,
@@ -103,6 +130,7 @@ inline void preview_match(const cv::Mat& lightMask, cv::Mat& lightMatch,
     std::vector<Candidate> candidates;
     for (std::size_t i = 0; i < lights.size(); ++i) {
         for (std::size_t j = i + 1; j < lights.size(); ++j) {
+            if (lights[i].isRed != lights[j].isRed) continue;
             float lengthRatio = std::min(lights[i].length, lights[j].length) /
                                 std::max(lights[i].length, lights[j].length);
             if (lengthRatio < p.pairLength / 100.0f) continue;

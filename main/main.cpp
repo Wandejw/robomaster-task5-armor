@@ -63,7 +63,7 @@ while (true)
 
 
 //灯光识别
-        light_detector(mask,lightMask,lights);
+        light_detector_dual(mask,lightMask,lights);
         cv::namedWindow("Light Mask", cv::WINDOW_NORMAL);   
         cv::resizeWindow("Light Mask", 900, 700);
         cv::imshow("Light Mask", lightMask);

@@ -64,6 +64,7 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
 
     for (std::size_t j = i + 1; j < lights.size(); ++j)
     {
+        if (lights[i].isRed != lights[j].isRed) continue;
         float shorterLength = std::min(lights[i].length, lights[j].length);
         float longerLength  = std::max(lights[i].length, lights[j].length);
         float lengthRatio   = shorterLength / longerLength;

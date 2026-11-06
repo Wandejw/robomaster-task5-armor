@@ -7,5 +7,6 @@ struct LightBar
     float length;            // 长边
     float width;             // 短边
     float fillRatio = 0.0f;  // 当前帧轮廓的填充率
+    bool isRed = false;       // 灯条所属的目标颜色
     cv::RotatedRect rect;     // 最小外接旋转矩形
 };
