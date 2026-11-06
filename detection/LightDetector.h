@@ -5,6 +5,7 @@
 #include "../common/DetectionTypes.h"
 #include <cmath>
 
-void light_detector(const cv::Mat& mask, cv::Mat& lightMask,std::vector<LightBar>& lights);
+void light_detector(const cv::Mat& mask, cv::Mat& lightMask,
+                    std::vector<LightBar>& lights, bool redMask = false);
 void light_detector_dual(const cv::Mat& mask, cv::Mat& lightMask,
                          std::vector<LightBar>& lights);

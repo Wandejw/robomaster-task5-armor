@@ -1,11 +1,13 @@
 #include "LightDetector.h"
+#include "../common/CompactLightCandidate.h"
 #include <opencv2/imgproc.hpp>
 #include <vector>
 #include <algorithm>
 #include <cmath>
 #include <utility>
 
-void light_detector(const cv::Mat& mask, cv::Mat& lightMask,std::vector<LightBar>& lights)
+void light_detector(const cv::Mat& mask, cv::Mat& lightMask,
+                    std::vector<LightBar>& lights, bool redMask)
 // 识别灯条轮廓并绘制到 lightMask 上，同时将识别到的灯条信息存储到 lights 向量中
 {
     // 先清空 lights 向量，以便存储当前帧识别到的灯条信息
@@ -92,6 +94,77 @@ lights.push_back(light);
 //红色绘制矩形边，厚度为1
     }
 }
+
+// 仅对红色补回紧邻已确认灯条、填充率略低的细短候选。
+if (redMask) for (const auto& contour : contours)
+{
+    cv::RotatedRect rect = cv::minAreaRect(contour);
+    float length = std::max(rect.size.width, rect.size.height);
+    float width = std::min(rect.size.width, rect.size.height);
+    if (width <= 0.0f) continue;
+    float fill = static_cast<float>(cv::contourArea(contour) / (length * width));
+    if (!is_neighbor_weak_red_light_candidate(rect, length, width, fill, lights)) continue;
+    LightBar light;
+    light.center = rect.center;
+    light.length = length;
+    light.width = width;
+    light.fillRatio = fill;
+    light.rect = rect;
+    lights.push_back(light);
+    cv::Point2f vertices[4];
+    rect.points(vertices);
+    for (int i = 0; i < 4; ++i)
+        cv::line(lightMask, vertices[i], vertices[(i + 1) % 4],
+                 cv::Scalar(0, 0, 255), 1);
+}
+
+// 补回紧邻已有灯条、长宽比略超上限的细灯条。
+for (const auto& contour : contours)
+{
+    cv::RotatedRect rect = cv::minAreaRect(contour);
+    float length = std::max(rect.size.width, rect.size.height);
+    float width = std::min(rect.size.width, rect.size.height);
+    if (width <= 0.0f) continue;
+    float fill = static_cast<float>(cv::contourArea(contour) / (length * width));
+    if (!is_neighbor_thin_light_candidate(rect, length, width, fill, lights)) continue;
+    LightBar light;
+    light.center = rect.center;
+    light.length = length;
+    light.width = width;
+    light.fillRatio = fill;
+    light.rect = rect;
+    lights.push_back(light);
+    cv::Point2f vertices[4];
+    rect.points(vertices);
+    for (int i = 0; i < 4; ++i)
+        cv::line(lightMask, vertices[i], vertices[(i + 1) % 4],
+                 cv::Scalar(0, 0, 255), 1);
+}
+
+// 近圆形的小蓝点也画红框；是否参与匹配由配对规则决定。
+for (const auto& contour : contours)
+{
+    cv::RotatedRect rect = cv::minAreaRect(contour);
+    float length = std::max(rect.size.width, rect.size.height);
+    float width = std::min(rect.size.width, rect.size.height);
+    if (width <= 0.0f) continue;
+    float fill = static_cast<float>(cv::contourArea(contour) / (length * width));
+    if (!is_compact_light_candidate(rect, length, width, fill, lights)) continue;
+
+    LightBar light;
+    light.center = rect.center;
+    light.length = length;
+    light.width = width;
+    light.fillRatio = fill;
+    light.redOnly = true;
+    light.rect = rect;
+    lights.push_back(light);
+    cv::Point2f vertices[4];
+    rect.points(vertices);
+    for (int i = 0; i < 4; ++i)
+        cv::line(lightMask, vertices[i], vertices[(i + 1) % 4],
+                 cv::Scalar(0, 0, 255), 1);
+}
 }
 
 void light_detector_dual(const cv::Mat& mask, cv::Mat& lightMask,
@@ -102,7 +175,7 @@ void light_detector_dual(const cv::Mat& mask, cv::Mat& lightMask,
     cv::compare(mask, 128, redMask, cv::CMP_EQ);
     std::vector<LightBar> blueLights, redLights;
     light_detector(blueMask, blueDraw, blueLights);
-    light_detector(redMask, redDraw, redLights);
+    light_detector(redMask, redDraw, redLights, true);
     for (auto& light : redLights) light.isRed = true;
     lights = std::move(blueLights);
     lights.insert(lights.end(), redLights.begin(), redLights.end());

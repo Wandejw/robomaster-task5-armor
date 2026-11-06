@@ -1,4 +1,5 @@
 #include "ArmorMatcher.h"
+#include "../common/CompactLightCandidate.h"
 #include "../common/PairContinuity.h"
 #include <algorithm>  // std::min、std::max
 #include <cmath>  // std::abs 的浮点数版本
@@ -65,6 +66,14 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
     for (std::size_t j = i + 1; j < lights.size(); ++j)
     {
         if (lights[i].isRed != lights[j].isRed) continue;
+        if (lights[i].redOnly || lights[j].redOnly)
+        {
+            cv::RotatedRect compactRect;
+            double compactLoss;
+            if (make_compact_neighbor_pair(lights[i], lights[j], compactRect, compactLoss))
+                pairCandidates.push_back({i, j, compactLoss, compactRect});
+            continue;
+        }
         float shorterLength = std::min(lights[i].length, lights[j].length);
         float longerLength  = std::max(lights[i].length, lights[j].length);
         float lengthRatio   = shorterLength / longerLength;

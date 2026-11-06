@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DetectionTypes.h"
+#include "CompactLightCandidate.h"
 #include "PairContinuity.h"
 #include <opencv2/imgproc.hpp>
 #include <algorithm>
@@ -59,7 +60,8 @@ inline cv::Point2f preview_long_direction(const cv::RotatedRect& rect)
 }
 
 inline void preview_detect(const cv::Mat& mask, cv::Mat& lightMask,
-                           std::vector<LightBar>& lights, const PreviewParams& p)
+                           std::vector<LightBar>& lights, const PreviewParams& p,
+                           bool redMask = false)
 {
     lights.clear();
     std::vector<std::vector<cv::Point>> contours;
@@ -96,6 +98,66 @@ inline void preview_detect(const cv::Mat& mask, cv::Mat& lightMask,
             cv::line(lightMask, vertices[i], vertices[(i + 1) % 4],
                      cv::Scalar(0, 0, 255), 1);
     }
+    if (redMask) for (const auto& contour : contours) {
+        cv::RotatedRect rect = cv::minAreaRect(contour);
+        float length = std::max(rect.size.width, rect.size.height);
+        float width = std::min(rect.size.width, rect.size.height);
+        if (width <= 0.0f) continue;
+        float fill = static_cast<float>(cv::contourArea(contour) / (length * width));
+        if (!is_neighbor_weak_red_light_candidate(rect, length, width, fill, lights)) continue;
+        LightBar light;
+        light.center = rect.center;
+        light.length = length;
+        light.width = width;
+        light.fillRatio = fill;
+        light.rect = rect;
+        lights.push_back(light);
+        cv::Point2f vertices[4];
+        rect.points(vertices);
+        for (int i = 0; i < 4; ++i)
+            cv::line(lightMask, vertices[i], vertices[(i + 1) % 4],
+                     cv::Scalar(0, 0, 255), 1);
+    }
+    for (const auto& contour : contours) {
+        cv::RotatedRect rect = cv::minAreaRect(contour);
+        float length = std::max(rect.size.width, rect.size.height);
+        float width = std::min(rect.size.width, rect.size.height);
+        if (width <= 0.0f) continue;
+        float fill = static_cast<float>(cv::contourArea(contour) / (length * width));
+        if (!is_neighbor_thin_light_candidate(rect, length, width, fill, lights)) continue;
+        LightBar light;
+        light.center = rect.center;
+        light.length = length;
+        light.width = width;
+        light.fillRatio = fill;
+        light.rect = rect;
+        lights.push_back(light);
+        cv::Point2f vertices[4]; rect.points(vertices);
+        for (int i = 0; i < 4; ++i)
+            cv::line(lightMask, vertices[i], vertices[(i + 1) % 4],
+                     cv::Scalar(0, 0, 255), 1);
+    }
+    for (const auto& contour : contours) {
+        cv::RotatedRect rect = cv::minAreaRect(contour);
+        float length = std::max(rect.size.width, rect.size.height);
+        float width = std::min(rect.size.width, rect.size.height);
+        if (width <= 0.0f) continue;
+        float fill = static_cast<float>(cv::contourArea(contour) / (length * width));
+        if (!is_compact_light_candidate(rect, length, width, fill, lights)) continue;
+        LightBar light;
+        light.center = rect.center;
+        light.length = length;
+        light.width = width;
+        light.fillRatio = fill;
+        light.redOnly = true;
+        light.rect = rect;
+        lights.push_back(light);
+        cv::Point2f vertices[4];
+        rect.points(vertices);
+        for (int i = 0; i < 4; ++i)
+            cv::line(lightMask, vertices[i], vertices[(i + 1) % 4],
+                     cv::Scalar(0, 0, 255), 1);
+    }
 }
 
 inline void preview_detect_dual(const cv::Mat& mask, cv::Mat& lightMask,
@@ -106,7 +168,7 @@ inline void preview_detect_dual(const cv::Mat& mask, cv::Mat& lightMask,
     cv::compare(mask, 128, redMask, cv::CMP_EQ);
     std::vector<LightBar> blueLights, redLights;
     preview_detect(blueMask, blueDraw, blueLights, p);
-    preview_detect(redMask, redDraw, redLights, p);
+    preview_detect(redMask, redDraw, redLights, p, true);
     for (auto& light : redLights) light.isRed = true;
     lights = std::move(blueLights);
     lights.insert(lights.end(), redLights.begin(), redLights.end());
@@ -131,6 +193,13 @@ inline void preview_match(const cv::Mat& lightMask, cv::Mat& lightMatch,
     for (std::size_t i = 0; i < lights.size(); ++i) {
         for (std::size_t j = i + 1; j < lights.size(); ++j) {
             if (lights[i].isRed != lights[j].isRed) continue;
+            if (lights[i].redOnly || lights[j].redOnly) {
+                cv::RotatedRect compactRect;
+                double compactLoss;
+                if (make_compact_neighbor_pair(lights[i], lights[j], compactRect, compactLoss))
+                    candidates.push_back({i, j, compactLoss, compactRect});
+                continue;
+            }
             float lengthRatio = std::min(lights[i].length, lights[j].length) /
                                 std::max(lights[i].length, lights[j].length);
             if (lengthRatio < p.pairLength / 100.0f) continue;
