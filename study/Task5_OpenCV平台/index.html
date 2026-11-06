@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="离线 OpenCV ImageProcessing100Wen C++ 学习知识库"
+    />
+    <title>Task5 · OpenCV 精选题</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1220'/%3E%3Ccircle cx='24' cy='24' r='12' fill='none' stroke='%2338bdf8' stroke-width='7'/%3E%3Ccircle cx='42' cy='38' r='12' fill='none' stroke='%23fb923c' stroke-width='7'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="vendor/katex/katex.min.css" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="返回题库首页">
+        <span class="brand-mark" aria-hidden="true">CV</span>
+        <span>
+          <strong>Task5 · OpenCV 精选</strong>
+          <small>C++ 离线学习库</small>
+        </span>
+      </a>
+      <span class="offline-badge">● 完全离线</span>
+    </header>
+
+    <main id="home-view">
+      <section class="overview" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">IMAGE PROCESSING · KNOWLEDGE BASE</p>
+          <h1 id="page-title">聚焦重点题，建立你的视觉算法地图。</h1>
+          <p class="intro">
+            仅保留学习路线中的 23 道重点题，题号与原仓库一致，方便对照 README 与 C++ 答案。
+          </p>
+        </div>
+        <div class="dataset-card" aria-label="学习进度">
+          <span>LEARNING PROGRESS</span>
+          <strong><span id="completed-count">0</span> / <span id="total-count">23</span></strong>
+          <div class="index-bar" aria-hidden="true"><span id="progress-fill"></span></div>
+          <small id="progress-label">尚未完成题目</small>
+        </div>
+      </section>
+
+      <section class="legend" aria-label="学习深度说明">
+        <span><i class="dot implement"></i>深入原理 · 自己实现</span>
+        <span><i class="dot deep-read"></i>深入原理 · 看懂源码</span>
+        <span><i class="dot understand"></i>理解原理 · 看懂源码</span>
+      </section>
+
+      <section class="math-overview" aria-labelledby="math-overview-heading">
+        <div class="section-heading">
+          <div><p class="eyebrow">UNIVERSITY MATH</p><h2 id="math-overview-heading">三条大学数学补课线</h2></div>
+          <p>已去除高中及以前的基础知识，先补必需前置，再优先学能推进 Task5 的部分。</p>
+        </div>
+        <div class="math-card-grid">
+          <a class="math-card cyan" href="math.html?task=math1"><span>MATH1</span><h3>高等数学</h3><p>偏导数、梯度、离散差分与 Laplacian</p><small id="math1-home-progress">0 / 7</small></a>
+          <a class="math-card orange" href="math.html?task=math2"><span>MATH2</span><h3>概率论</h3><p>直方图分布、期望方差、CDF 与高斯分布</p><small id="math2-home-progress">0 / 8</small></a>
+          <a class="math-card violet" href="math.html?task=math3"><span>MATH3</span><h3>线性代数</h3><p>矩阵、逆变换、齐次坐标与插值权重</p><small id="math3-home-progress">0 / 7</small></a>
+        </div>
+      </section>
+
+      <section class="question-section" aria-labelledby="question-heading">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">QUESTION INDEX</p>
+            <h2 id="question-heading">23 道重点题</h2>
+          </div>
+          <p>点击题目查看 README、公式、输入输出图片和 C++ 答案。</p>
+        </div>
+
+        <label class="search-box" for="question-search">
+          <span aria-hidden="true">⌕</span>
+          <input id="question-search" type="search" autocomplete="off" placeholder="搜索 Sobel、Gaussian、NMS、灰度化……" />
+          <small id="search-result-count">23 题</small>
+        </label>
+
+        <section id="recent-section" class="recent-section" aria-labelledby="recent-heading" hidden>
+          <div class="recent-heading"><h3 id="recent-heading">最近学习</h3><span>保存在这台设备</span></div>
+          <div id="recent-list" class="recent-list"></div>
+        </section>
+
+        <div id="question-list" class="question-grid" aria-live="polite"></div>
+        <p id="empty-search" class="empty-search" hidden>没有找到匹配的精选题。</p>
+        <noscript>需要启用浏览器 JavaScript 才能显示本地题库。</noscript>
+      </section>
+    </main>
+
+    <main id="question-view" class="detail-shell" hidden>
+      <a class="back-link detail-back" href="#home">← 返回题库</a>
+      <section class="detail-hero">
+        <p id="detail-question-id" class="eyebrow">QUESTION</p>
+        <h1 id="detail-question-title">正在读取题目……</h1>
+        <span id="detail-question-difficulty" class="difficulty"></span>
+      </section>
+      <div class="detail-layout">
+        <div class="content-column">
+          <article id="detail-readme-content" class="markdown-body" aria-label="题目 README 内容"></article>
+          <section class="learning-panel" aria-labelledby="detail-learning-heading">
+            <div class="learning-heading">
+              <div><p class="eyebrow">MY LEARNING</p><h2 id="detail-learning-heading">学习记录</h2></div>
+              <span id="detail-save-status" role="status">本地自动保存</span>
+            </div>
+            <div class="learning-actions">
+              <label class="complete-toggle"><input id="detail-completed-toggle" type="checkbox" /><span>已完成这道题</span></label>
+              <button id="detail-favorite-toggle" class="favorite-button" type="button" aria-pressed="false">☆ 收藏</button>
+            </div>
+            <label class="note-field" for="detail-learning-note"><span>我的笔记</span><textarea id="detail-learning-note" rows="8" placeholder="记录公式、实现思路、易错点……"></textarea></label>
+          </section>
+        </div>
+        <aside class="detail-aside">
+          <p class="aside-label">SOURCE</p>
+          <a id="detail-code-link" class="primary-button">查看 C++ 代码</a>
+          <dl><div><dt>原始题号</dt><dd id="detail-aside-question-id">保留</dd></div><div><dt>题目图片</dt><dd><span id="detail-image-count">0</span> 张</dd></div></dl>
+        </aside>
+      </div>
+      <nav class="question-navigation" aria-label="精选题目切换"><a id="detail-previous-question"></a><a id="detail-next-question"></a></nav>
+    </main>
+
+    <footer id="site-footer">
+      <span>Task5 OpenCV 学习平台</span>
+      <span>数据来自本地 ImageProcessing100Wen 副本</span>
+    </footer>
+
+    <script src="vendor/katex/katex.js"></script>
+    <script src="data/questions.js"></script>
+    <script src="data/math.js"></script>
+    <script src="js/markdown.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

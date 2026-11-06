@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>题目详情 · Task5 OpenCV</title>
+    <link rel="stylesheet" href="vendor/katex/katex.min.css" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body data-page="question">
+    <header class="topbar">
+      <a class="brand" href="index.html"><span class="brand-mark">CV</span><span><strong>Task5 · OpenCV 精选</strong><small>C++ 离线学习库</small></span></a>
+      <a class="back-link" href="index.html">← 返回题库</a>
+    </header>
+    <main class="detail-shell">
+      <section class="detail-hero">
+        <p id="question-id" class="eyebrow">QUESTION</p>
+        <h1 id="question-title">正在读取题目……</h1>
+        <span id="question-difficulty" class="difficulty"></span>
+      </section>
+      <div class="detail-layout">
+        <div class="content-column">
+          <article id="readme-content" class="markdown-body" aria-label="题目 README 内容"></article>
+          <section class="learning-panel" aria-labelledby="learning-heading">
+            <div class="learning-heading">
+              <div><p class="eyebrow">MY LEARNING</p><h2 id="learning-heading">学习记录</h2></div>
+              <span id="save-status" role="status">本地自动保存</span>
+            </div>
+            <div class="learning-actions">
+              <label class="complete-toggle"><input id="completed-toggle" type="checkbox" /><span>已完成这道题</span></label>
+              <button id="favorite-toggle" class="favorite-button" type="button" aria-pressed="false">☆ 收藏
+              </button>
+            </div>
+            <label class="note-field" for="learning-note"><span>我的笔记</span><textarea id="learning-note" rows="8" placeholder="记录公式、实现思路、易错点……"></textarea></label>
+          </section>
+        </div>
+        <aside class="detail-aside">
+          <p class="aside-label">SOURCE</p>
+          <a id="code-link" class="primary-button">查看 C++ 代码</a>
+          <dl><div><dt>原始题号</dt><dd id="aside-question-id">保留</dd></div><div><dt>题目图片</dt><dd><span id="image-count">0</span> 张</dd></div></dl>
+        </aside>
+      </div>
+      <nav class="question-navigation" aria-label="精选题目切换"><a id="previous-question"></a><a id="next-question"></a></nav>
+    </main>
+    <script src="vendor/katex/katex.js"></script>
+    <script src="data/questions.js"></script>
+    <script src="js/markdown.js"></script>
+    <script src="js/question.js"></script>
+  </body>
+</html>

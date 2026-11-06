@@ -1,0 +1,413 @@
+window.OPENCV_QUESTIONS = [
+  {
+    "id": 1,
+    "title": "通道交换",
+    "difficulty": "implement",
+    "readme": "读取图像，然后将$\\text{RGB}$通道替换成$\\text{BGR}$通道。\n\n下面的代码用于提取图像的红色通道。\n\n注意，`cv2.imread()` 的系数是按$\\text{BGR}$顺序排列的！\n\n其中的变量`red`表示的是仅有原图像红通道的`imori.jpg`。\n\n```python\nimport cv2\nimg = cv2.imread(\"imori.jpg\")\nred = img[:, :, 2].copy()\n```\n\n| 输入（imori.jpg) | 输出(answers_image/answer_1.jpg) |\n| :--------------: | :------------------------------: |\n|  ![](imori.jpg)  | ![](answers_image/answer_1.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n\n\n// Channel swap\ncv::Mat channel_swap(cv::Mat img){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC3);\n\n  // each y, x\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      // R -> B\n      out.at<cv::Vec3b>(y, x)[0] = img.at<cv::Vec3b>(y, x)[2];\n      // B -> R\n      out.at<cv::Vec3b>(y, x)[2] = img.at<cv::Vec3b>(y, x)[0];\n      // G -> G\n      out.at<cv::Vec3b>(y, x)[1] = img.at<cv::Vec3b>(y, x)[1];\n    }\n  }\n\n  return out;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // channel swap\n  cv::Mat out = channel_swap(img);\n\n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"sample\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n\n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_1.cpp",
+    "images": [
+      "assets/images/question_001/imori.jpg",
+      "assets/images/question_001/answer_1.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_001/imori.jpg",
+      "answers_image/answer_1.jpg": "assets/images/question_001/answer_1.jpg"
+    },
+    "source_readme": "Question_01_10/README.md"
+  },
+  {
+    "id": 2,
+    "title": "灰度化（Grayscale）",
+    "difficulty": "implement",
+    "readme": "将图像灰度化吧！\n\n灰度是一种图像亮度的表示方法，通过下式计算：\n$$\nY = 0.2126\\  R + 0.7152\\  G + 0.0722\\  B\n$$\n\n| 输入（imori.jpg) | 输出(answers_image/answer_2.jpg) |\n| :--------------: | :------------------------------: |\n|  ![](imori.jpg)  | ![](answers_image/answer_2.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n\n\n// BGR -> Gray\ncv::Mat BGR2GRAY(cv::Mat img){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  // each y, x\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      // BGR -> Gray\n      out.at<uchar>(y, x) = 0.2126 * (float)img.at<cv::Vec3b>(y, x)[2] \\\n        + 0.7152 * (float)img.at<cv::Vec3b>(y, x)[1] \\\n        + 0.0722 * (float)img.at<cv::Vec3b>(y, x)[0];\n    }\n  }\n\n  return out;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // BGR -> Gray\n  cv::Mat out = BGR2GRAY(img);\n\n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"sample\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n\n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_2.cpp",
+    "images": [
+      "assets/images/question_002/imori.jpg",
+      "assets/images/question_002/answer_2.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_002/imori.jpg",
+      "answers_image/answer_2.jpg": "assets/images/question_002/answer_2.jpg"
+    },
+    "source_readme": "Question_01_10/README.md"
+  },
+  {
+    "id": 3,
+    "title": "二值化（Thresholding）",
+    "difficulty": "implement",
+    "readme": "把图像进行二值化吧。\n\n二值化是将图像使用黑和白两种颜色表示的方法。\n\n我们将灰度的阈值设置为$128$来进行二值化，即：\n$$\ny=\n\\begin{cases}\n0& (\\text{if}\\quad y < 128) \\\\\n255& (\\text{else})\n\\end{cases}\n$$\n\n| 输入（imori.jpg) | 输出(answers_image/answer_3.jpg) |\n| :--------------: | :------------------------------: |\n|  ![](imori.jpg)  | ![](answers_image/answer_3.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n\n\n// BGR -> Gray\ncv::Mat BGR2GRAY(cv::Mat img){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  // each y, x\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      // BGR -> Gray\n      out.at<uchar>(y, x) = 0.2126 * (float)img.at<cv::Vec3b>(y, x)[2] \\\n        + 0.7152 * (float)img.at<cv::Vec3b>(y, x)[1] \\\n        + 0.0722 * (float)img.at<cv::Vec3b>(y, x)[0];\n    }\n  }\n\n  return out;\n}\n\n// Gray -> Binary\ncv::Mat Binarize(cv::Mat gray, int th){\n  int width = gray.cols;\n  int height = gray.rows;\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  // each y, x\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      // Binarize\n      if (gray.at<uchar>(y, x) > th){\n        out.at<uchar>(y, x) = 255;\n      } else {\n        out.at<uchar>(y, x) = 0;\n      }\n    \n    }\n  }\n\n  return out;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // BGR -> Gray\n  cv::Mat gray = BGR2GRAY(img);\n\n  // Gray -> Binary\n  cv::Mat out = Binarize(gray, 128);\n\n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"sample\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n\n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_3.cpp",
+    "images": [
+      "assets/images/question_003/imori.jpg",
+      "assets/images/question_003/answer_3.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_003/imori.jpg",
+      "answers_image/answer_3.jpg": "assets/images/question_003/answer_3.jpg"
+    },
+    "source_readme": "Question_01_10/README.md"
+  },
+  {
+    "id": 4,
+    "title": "大津二值化算法（Otsu's Method）",
+    "difficulty": "understand",
+    "readme": "使用大津算法来二值化图像吧。\n\n大津算法，也被称作最大类间方差法，是一种可以自动确定二值化中阈值的算法。\n\n从**类内方差**和**类间方差**的比值计算得来：\n\n\n- 小于阈值$t$的类记作$0$，大于阈值$t$的类记作$1$；\n- $w_0$和$w_1$是被阈值$t$分开的两个类中的像素数占总像素数的比率（满足$w_0+w_1=1$）；\n- ${S_0}^2$， ${S_1}^2$是这两个类中像素值的方差；\n- $M_0$，$M_1$是这两个类的像素值的平均值；\n\n即：\n\n* 类内方差：${S_w}^2=w_0\\ {S_0}^2+w_1\\  {S_1}^2$\n* 类间方差：${S_b}^2 = w_0 \\  (M_0 - M_t)^2 + w_1\\ (M_1 - M_t)^2 = w_0\\  w_1\\  (M_0 - M_1) ^2$\n* 图像所有像素的方差：${S_t}^2 = {S_w}^2 + {S_b}^2 = \\text{常数}$\n\n根据以上的式子，我们用以下的式子计算分离度$X$：[^1]\n\n[^1]: 这里原repo配图里的公式好像打错了。\n\n$$\nX = \\frac{{S_b}^2}{{S_w}^2} = \\frac{{S_b}^2}{{S_t}^2 - {S_b}^2}\n$$\n\n也就是说： \n$$\n\\arg\\max\\limits_{t}\\ X=\\arg\\max\\limits_{t}\\ {S_b}^2\n$$\n换言之，如果使${S_b}^2={w_0}\\ {w_1}\\ (M_0 - M_1)^2$最大，就可以得到最好的二值化阈值$t$。\n\n| 输入（imori.jpg) | 输出 ($\\text{th} = 127$​) (answers_image/answer_4.jpg) |\n| :--------------: | :----------------------------------------------------: |\n|  ![](imori.jpg)  |            ![](answers_image/answer_4.jpg)             |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n// BGR -> Gray\ncv::Mat BGR2GRAY(cv::Mat img){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  // each y, x\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      // BGR -> Gray\n      out.at<uchar>(y, x) = 0.2126 * (float)img.at<cv::Vec3b>(y, x)[2] \\\n        + 0.7152 * (float)img.at<cv::Vec3b>(y, x)[1] \\\n        + 0.0722 * (float)img.at<cv::Vec3b>(y, x)[0];\n    }\n  }\n\n  return out;\n}\n\n// Gray -> Binary\ncv::Mat Binarize_Otsu(cv::Mat gray){\n  int width = gray.cols;\n  int height = gray.rows;\n\n  // determine threshold\n  double w0 = 0, w1 = 0;\n  double m0 = 0, m1 = 0;\n  double max_sb = 0, sb = 0;\n  int th = 0;\n  int val;\n\n  // Get threshold\n  for (int t = 0; t < 255; t++){\n    w0 = 0;\n    w1 = 0;\n    m0 = 0;\n    m1 = 0;\n    for (int y = 0; y < height; y++){\n      for (int x = 0; x < width; x++){\n        val = (int)(gray.at<uchar>(y, x));\n\n        if (val < t){\n          w0++;\n          m0 += val;\n        } else {\n          w1++;\n          m1 += val;\n        }\n      }\n    }\n\n    m0 /= w0;\n    m1 /= w1;\n    w0 /= (height * width);\n    w1 /= (height * width);\n    sb = w0 * w1 * pow((m0 - m1), 2);\n    \n    if(sb > max_sb){\n      max_sb = sb;\n      th = t;\n    }\n  }\n\n  std::cout << \"threshold:\" << th << std::endl;\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  // each y, x\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      // Binarize\n      if (gray.at<uchar>(y, x) > th){\n        out.at<uchar>(y, x) = 255;\n      } else {\n        out.at<uchar>(y, x) = 0;\n      }\n    \n    }\n  }\n\n  return out;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // BGR -> Gray\n  cv::Mat gray = BGR2GRAY(img);\n\n  // Gray -> Binary\n  cv::Mat out = Binarize_Otsu(gray);\n\n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"sample\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n\n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_4.cpp",
+    "images": [
+      "assets/images/question_004/imori.jpg",
+      "assets/images/question_004/answer_4.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_004/imori.jpg",
+      "answers_image/answer_4.jpg": "assets/images/question_004/answer_4.jpg"
+    },
+    "source_readme": "Question_01_10/README.md"
+  },
+  {
+    "id": 5,
+    "title": "HSV变换",
+    "difficulty": "implement",
+    "readme": "将使用$\\text{HSV}$表示色彩的图像的色相反转吧！\n\n$\\text{HSV}$即使用**色相（Hue）、饱和度（Saturation）、明度（Value）**来表示色彩的一种方式。\n\n- 色相：将颜色使用$0^{\\circ}$到$360^{\\circ}$表示，就是平常所说的颜色名称，如红色、蓝色。色相与数值按下表对应：\n\n  | 红          | 黄           | 绿            | 青色          | 蓝色          | 品红          | 红            |\n  | ----------- | ------------ | ------------- | ------------- | ------------- | ------------- | ------------- |\n  | $0^{\\circ}$ | $60^{\\circ}$ | $120^{\\circ}$ | $180^{\\circ}$ | $240^{\\circ}$ | $300^{\\circ}$ | $360^{\\circ}$ |\n\n- 饱和度：是指色彩的纯度，饱和度越低则颜色越黯淡（$0\\leq S < 1$）；\n- 明度：即颜色的明暗程度。数值越高越接近白色，数值越低越接近黑色（$0\\leq V < 1$）；\n\n从$\\text{RGB}$色彩表示转换到$\\text{HSV}$色彩表示通过以下方式计算：\n\n$\\text{RGB}$的取值范围为$[0, 1]$，令：\n$$\n\\text{Max}=\\max(R,G,B)\\\\\n\\text{Min}=\\min(R,G,B)\n$$\n色相：\n$$\nH=\\begin{cases}\n0&(\\text{if}\\ \\text{Min}=\\text{Max})\\\\\n60\\  \\frac{G-R}{\\text{Max}-\\text{Min}}+60&(\\text{if}\\ \\text{Min}=B)\\\\\n60\\  \\frac{B-G}{\\text{Max}-\\text{Min}}+180&(\\text{if}\\ \\text{Min}=R)\\\\\n60\\  \\frac{R-B}{\\text{Max}-\\text{Min}}+300&(\\text{if}\\ \\text{Min}=G)\n\\end{cases}\n$$\n饱和度：\n$$\nS=\\text{Max}-\\text{Min}\n$$\n明度：\n$$\nV=\\text{Max}\n$$\n从$\\text{HSV}$色彩表示转换到$\\text{RGB}$色彩表示通过以下方式计算：\n$$\nC = S\\\\\nH' = \\frac{H}{60}\\\\\nX = C\\  (1 - |H' \\mod 2 - 1|)\\\\\n(R,G,B)=(V-C)\\ (1,1,1)+\\begin{cases}\n(0, 0, 0)&  (\\text{if H is undefined})\\\\\n(C, X, 0)&  (\\text{if}\\quad 0 \\leq H' < 1)\\\\\n(X, C, 0)&  (\\text{if}\\quad 1 \\leq H' < 2)\\\\\n(0, C, X)&  (\\text{if}\\quad 2 \\leq H' < 3)\\\\\n(0, X, C)&  (\\text{if}\\quad 3 \\leq H' < 4)\\\\\n(X, 0, C)&  (\\text{if}\\quad 4 \\leq H' < 5)\\\\\n(C, 0, X)&  (\\text{if}\\quad 5 \\leq H' < 6)\n\\end{cases}\n$$\n请将色相反转（色相值加$180$），然后再用$\\text{RGB}$色彩空间表示图片。\n\n| 输入（imori.jpg) | 输出(answers_image/answer_5.jpg) |\n| :--------------: | :------------------------------: |\n|  ![](imori.jpg)  | ![](answers_image/answer_5.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n// BGR -> HSV\ncv::Mat BGR2HSV(cv::Mat img){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n\n  float r, g, b;\n  float h, s, v;\n  float _max, _min;\n\n  // prepare output\n  cv::Mat hsv = cv::Mat::zeros(height, width, CV_32FC3);\n\n  // each y, x\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      // BGR -> HSV\n      r = (float)img.at<cv::Vec3b>(y, x)[2] / 255;\n      g = (float)img.at<cv::Vec3b>(y, x)[1] / 255;\n      b = (float)img.at<cv::Vec3b>(y, x)[0] / 255;\n\n      _max = fmax(r, fmax(g, b));\n      _min = fmin(r, fmin(g, b));\n\n      // get Hue\n      if(_max == _min){\n\t      h = 0;\n      } else if (_min == b) {\n\t      h = 60 * (g - r) / (_max - _min) + 60;\n      } else if (_min == r) {\n\t      h = 60 * (b - g) / (_max - _min) + 180;\n      } else if (_min == g) {\n\t      h = 60 * (r - b) / (_max - _min) + 300;\n      }\n\n      // get Saturation\n      s = _max - _min;\n\n      // get Value\n      v = _max;\n\n      hsv.at<cv::Vec3f>(y, x)[0] = h;\n      hsv.at<cv::Vec3f>(y, x)[1] = s;\n      hsv.at<cv::Vec3f>(y, x)[2] = v;\n    }\n  }\n  return hsv;\n}\n\n\n// HSV -> BGR\ncv::Mat HSV2BGR(cv::Mat hsv){\n  // get height and width\n  int width = hsv.cols;\n  int height = hsv.rows;\n\n  float h, s, v;\n  double c, _h, _x;\n  double r, g, b;\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC3);\n\n  // each y, x\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n\n      h = hsv.at<cv::Vec3f>(y, x)[0];\n      s = hsv.at<cv::Vec3f>(y, x)[1];\n      v = hsv.at<cv::Vec3f>(y, x)[2];\n\n      c = s;\n      _h = h / 60;\n      _x = c * (1 - abs(fmod(_h, 2) - 1));\n\n      r = g = b = v - c;\n      \n      if (_h < 1) {\n        r += c;\n        g += _x;\n      } else if (_h < 2) {\n        r += _x;\n        g += c;\n      } else if (_h < 3) {\n\t  g += c;\n\t  b += _x;\n      } else if (_h < 4) {\n\t  g += _x;\n\t  b += c;\n      } else if (_h < 5) {\n\t  r += _x;\n\t  b += c;\n      } else if (_h < 6) {\n\t  r += c;\n\t  b += _x;\n      }\n\n      out.at<cv::Vec3b>(y, x)[0] = (uchar)(b * 255);\n      out.at<cv::Vec3b>(y, x)[1] = (uchar)(g * 255);\n      out.at<cv::Vec3b>(y, x)[2] = (uchar)(r * 255);\n    }\n  }\n\n  return out;\n}\n\n// inverse Hue\ncv::Mat inverse_hue(cv::Mat hsv){\n  int height = hsv.rows;\n  int width = hsv.cols;\n\n  for(int y = 0; y < height; y++){\n    for(int x = 0; x < width; x++){\n      hsv.at<cv::Vec3f>(y, x)[0] = fmod(hsv.at<cv::Vec3f>(y, x)[0] + 180, 360);\n    }\n  }\n\n  return hsv;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // BGR -> HSV\n  cv::Mat hsv = BGR2HSV(img);\n\n  // Inverse Hue\n  hsv = inverse_hue(hsv);\n\n  // Gray -> Binary\n  cv::Mat out = HSV2BGR(hsv);\n\n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"sample\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n\n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_5.cpp",
+    "images": [
+      "assets/images/question_005/imori.jpg",
+      "assets/images/question_005/answer_5.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_005/imori.jpg",
+      "answers_image/answer_5.jpg": "assets/images/question_005/answer_5.jpg"
+    },
+    "source_readme": "Question_01_10/README.md"
+  },
+  {
+    "id": 7,
+    "title": "平均池化（Average Pooling）",
+    "difficulty": "implement",
+    "readme": "将图片按照固定大小网格分割，网格内的像素值取网格内所有像素的平均值。\n\n我们将这种把图片使用均等大小网格分割，并求网格内代表值的操作称为**池化（Pooling）**。\n\n池化操作是**卷积神经网络（Convolutional Neural Network）**中重要的图像处理方式。平均池化按照下式定义：\n$$\nv=\\frac{1}{|R|}\\  \\sum\\limits_{i=1}^R\\ v_i\n$$\n请把大小为$128\\times128$的`imori.jpg`使用$8\\times8$的网格做平均池化。\n\n| 输入（imori.jpg) | 输出(answers_image/answer_7.jpg) |\n| :--------------: | :------------------------------: |\n|  ![](imori.jpg)  | ![](answers_image/answer_7.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// average pooling\ncv::Mat average_pooling(cv::Mat img){\n  int height = img.rows;\n  int width = img.cols;\n  int channel = img.channels();\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC3);\n\n  int r = 8;\n  double v = 0;\n  \n  for (int y = 0; y < height; y+=r){\n    for (int x = 0; x < width; x+=r){\n      for (int c = 0; c < channel; c++){\n        v = 0;\n        for (int dy = 0; dy < r; dy++){\n          for (int dx = 0; dx < r; dx++){\n            v += (double)img.at<cv::Vec3b>(y + dy, x + dx)[c];\n          }\n        }\n        v /= (r * r);\n        for (int dy = 0; dy < r; dy++){\n          for (int dx = 0; dx < r; dx++){\n            out.at<cv::Vec3b>(y + dy, x + dx)[c] = (uchar)v;\n          }\n        }\n      }\n\t  }\n\t}\n  return out;\n}\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // average pooling\n  cv::Mat out = average_pooling(img);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n\n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_7.cpp",
+    "images": [
+      "assets/images/question_007/imori.jpg",
+      "assets/images/question_007/answer_7.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_007/imori.jpg",
+      "answers_image/answer_7.jpg": "assets/images/question_007/answer_7.jpg"
+    },
+    "source_readme": "Question_01_10/README.md"
+  },
+  {
+    "id": 9,
+    "title": "高斯滤波（Gaussian Filter）",
+    "difficulty": "implement",
+    "readme": "使用高斯滤波器（$3\\times3$大小，标准差$\\sigma=1.3$）来对`imori_noise.jpg`进行降噪处理吧！\n\n高斯滤波器是一种可以使图像**平滑**的滤波器，用于去除**噪声**。可用于去除噪声的滤波器还有中值滤波器（参见问题十），平滑滤波器（参见问题十一）、LoG滤波器（参见问题十九）。\n\n高斯滤波器将中心像素周围的像素按照高斯分布加权平均进行平滑化。这样的（二维）权值通常被称为**卷积核（kernel）**或者**滤波器（filter）**。\n\n但是，由于图像的长宽可能不是滤波器大小的整数倍，因此我们需要在图像的边缘补$0$。这种方法称作**Zero Padding**。并且权值$g$（卷积核）要进行[归一化操作](https://blog.csdn.net/lz0499/article/details/54015150)（$\\sum\\ g = 1$）。\n\n按下面的高斯分布公式计算权值：\n$$\ng(x,y,\\sigma)=\\frac{1}{2\\  \\pi\\ \\sigma^2}\\  e^{-\\frac{x^2+y^2}{2\\  \\sigma^2}}\n$$\n\n标准差$\\sigma=1.3$的$8-$近邻高斯滤波器如下：\n$$\nK=\\frac{1}{16}\\  \\left[\n \\begin{matrix}\n   1 & 2 & 1 \\\\\n   2 & 4 & 2 \\\\\n   1 & 2 & 1\n  \\end{matrix}\n  \\right]\n$$\n\n| 输入（imori_noise.jpg) | 输出(answers_image/answer_9.jpg) |\n| :--------------------: | :------------------------------: |\n|  ![](imori_noise.jpg)  | ![](answers_image/answer_9.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// gaussian filter\ncv::Mat gaussian_filter(cv::Mat img, double sigma, int kernel_size){\n  int height = img.rows;\n  int width = img.cols;\n  int channel = img.channels();\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC3);\n\n  // prepare kernel\n  int pad = floor(kernel_size / 2);\n  int _x = 0, _y = 0;\n  double kernel_sum = 0;\n  \n  // get gaussian kernel\n  float kernel[kernel_size][kernel_size];\n\n  for (int y = 0; y < kernel_size; y++){\n    for (int x = 0; x < kernel_size; x++){\n      _y = y - pad;\n      _x = x - pad; \n      kernel[y][x] = 1 / (2 * M_PI * sigma * sigma) * exp( - (_x * _x + _y * _y) / (2 * sigma * sigma));\n      kernel_sum += kernel[y][x];\n    }\n  }\n\n  for (int y = 0; y < kernel_size; y++){\n    for (int x = 0; x < kernel_size; x++){\n      kernel[y][x] /= kernel_sum;\n    }\n  }\n  \n\n  // filtering\n  double v = 0;\n  \n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      for (int c = 0; c < channel; c++){\n\n      v = 0;\n\n      for (int dy = -pad; dy < pad + 1; dy++){\n        for (int dx = -pad; dx < pad + 1; dx++){\n          if (((x + dx) >= 0) && ((y + dy) >= 0)){\n            v += (double)img.at<cv::Vec3b>(y + dy, x + dx)[c] * kernel[dy + pad][dx + pad];\n          }\n        }\n      }\n      out.at<cv::Vec3b>(y, x)[c] = v;\n      }\n    }\n  }\n  return out;\n}\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori_noise.jpg\", cv::IMREAD_COLOR);\n\n  // gaussian filter\n  cv::Mat out = gaussian_filter(img, 1.3, 3);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n\n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_9.cpp",
+    "images": [
+      "assets/images/question_009/imori_noise.jpg",
+      "assets/images/question_009/answer_9.jpg"
+    ],
+    "image_map": {
+      "imori_noise.jpg": "assets/images/question_009/imori_noise.jpg",
+      "answers_image/answer_9.jpg": "assets/images/question_009/answer_9.jpg"
+    },
+    "source_readme": "Question_01_10/README.md"
+  },
+  {
+    "id": 10,
+    "title": "中值滤波（Median Filter）",
+    "difficulty": "implement",
+    "readme": "使用中值滤波器（$3\\times3$大小）来对`imori_noise.jpg`进行降噪处理吧！\n\n中值滤波器是一种可以使图像平滑的滤波器。这种滤波器用滤波器范围内（在这里是$3\\times3$）像素点的中值进行滤波，请在这里也采用Zero Padding。\n\n| 输入（imori_noise.jpg) | 输出(answers_image/answer_10.jpg) |\n| :--------------------: | :-------------------------------: |\n|  ![](imori_noise.jpg)  | ![](answers_image/answer_10.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// median filter\ncv::Mat median_filter(cv::Mat img, int kernel_size){\n  int height = img.rows;\n  int width = img.cols;\n  int channel = img.channels();\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC3);\n\n  // prepare kernel\n  int pad = floor(kernel_size / 2);\n  \n  // filtering\n  double v = 0;\n  int vs[kernel_size * kernel_size];\n  int count = 0;\n  \n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      for (int c = 0; c < channel; c++){\n      v = 0;\n      count = 0;\n      \n      for (int i = 0; i < kernel_size * kernel_size; i++){\n        vs[i] = 999;\n      }\n      \n      // get neighbor pixels\n      for (int dy = -pad; dy < pad + 1; dy++){\n        for (int dx = -pad; dx < pad + 1; dx++){\n          if (((y + dy) >= 0) && ((x + dx) >= 0)){\n            vs[count++] = (int)img.at<cv::Vec3b>(y + dy, x + dx)[c];\n          }\n        }\n      }\n\n      // get and assign median\n      std::sort(vs, vs + (kernel_size * kernel_size));\n      out.at<cv::Vec3b>(y, x)[c] = (uchar)vs[int(floor(count / 2)) + 1];\n      }\n    }\n  }\n  return out;\n}\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori_noise.jpg\", cv::IMREAD_COLOR);\n\n  // median filter\n  cv::Mat out = median_filter(img, 3);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n\n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_10.cpp",
+    "images": [
+      "assets/images/question_010/imori_noise.jpg",
+      "assets/images/question_010/answer_10.jpg"
+    ],
+    "image_map": {
+      "imori_noise.jpg": "assets/images/question_010/imori_noise.jpg",
+      "answers_image/answer_10.jpg": "assets/images/question_010/answer_10.jpg"
+    },
+    "source_readme": "Question_01_10/README.md"
+  },
+  {
+    "id": 11,
+    "title": "均值滤波器",
+    "difficulty": "implement",
+    "readme": "使用$3\\times3$的均值滤波器来进行滤波吧！\n\n均值滤波器使用网格内像素的平均值。\n\n| 输入 (imori.jpg) | 输出(answers_image/answer_11.jpg) |\n| :--------------: | :-------------------------------: |\n|  ![](imori.jpg)  | ![](answers_image/answer_11.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// mean filter\ncv::Mat mean_filter(cv::Mat img, int kernel_size){\n  int height = img.rows;\n  int width = img.cols;\n  int channel = img.channels();\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC3);\n\n  // prepare kernel\n  int pad = floor(kernel_size / 2);\n  \n  // filtering\n  double v = 0;\n  int vs[kernel_size * kernel_size];\n  int count = 0;\n  \n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      for (int c = 0; c < channel; c++){\n      v = 0;\n      \n      // get pixel sum\n      for (int dy = -pad; dy < pad + 1; dy++){\n        for (int dx = -pad; dx < pad + 1; dx++){\n          if (((y + dy) >= 0) && ((x + dx) >= 0)){\n            v += (int)img.at<cv::Vec3b>(y + dy, x + dx)[c];\n          }\n        }\n      }\n\n      // assign mean value\n      v /= (kernel_size * kernel_size);\n      out.at<cv::Vec3b>(y, x)[c] = (uchar)v;\n      }\n    }\n  }\n  return out;\n}\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // mean filter\n  cv::Mat out = mean_filter(img, 3);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n\n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_11.cpp",
+    "images": [
+      "assets/images/question_011/imori.jpg",
+      "assets/images/question_011/answer_11.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_011/imori.jpg",
+      "answers_image/answer_11.jpg": "assets/images/question_011/answer_11.jpg"
+    },
+    "source_readme": "Question_11_20/README.md"
+  },
+  {
+    "id": 15,
+    "title": "Sobel滤波器",
+    "difficulty": "deep-read",
+    "readme": "使用$3\\times3$的Sobel滤波器来进行滤波吧。\n\nSobel滤波器可以提取特定方向（纵向或横向）的边缘，滤波器按下式定义：\n\n纵向：\n$$\nK=\\left[\n\\begin{matrix}\n1&2&1\\\\\n0&0&0\\\\\n-1&-2&-1\n\\end{matrix}\n\\right]\n$$\n横向：\n$$\nK=\\left[\n\\begin{matrix}\n1&0&-1\\\\\n2&0&-2\\\\\n1&0&-1\n\\end{matrix}\n\\right]\n$$\n\n| 输入 (imori.jpg) | 输出・纵向 (answers/answer_15_v.jpg) | 输出・横向 (answers/answer_15_h.jpg) |\n| :--------------: | :----------------------------------: | :----------------------------------: |\n|  ![](imori.jpg)  |  ![](answers_image/answer_15_v.jpg)  |  ![](answers_image/answer_15_h.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// BGR -> Gray\ncv::Mat BGR2GRAY(cv::Mat img){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  // each y, x\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      // BGR -> Gray\n      out.at<uchar>(y, x) = 0.2126 * (float)img.at<cv::Vec3b>(y, x)[2] \\\n        + 0.7152 * (float)img.at<cv::Vec3b>(y, x)[1] \\\n        + 0.0722 * (float)img.at<cv::Vec3b>(y, x)[0];\n    }\n  }\n  return out;\n}\n\n// Sobel filter\ncv::Mat sobel_filter(cv::Mat img, int kernel_size, bool horizontal){\n  int height = img.rows;\n  int width = img.cols;\n  int channel = img.channels();\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  // prepare kernel\n  double kernel[kernel_size][kernel_size] = {{1, 2, 1}, {0, 0, 0}, {-1, -2, -1}};\n\n  if (horizontal){\n    kernel[0][1] = 0;\n    kernel[2][1] = 0;\n    kernel[1][0] = 2;\n    kernel[1][2] = -2;\n  }\n\n  int pad = floor(kernel_size / 2);\n\n  double v = 0;\n\n  // filtering  \n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      v = 0;\n      for (int dy = -pad; dy < pad + 1; dy++){\n        for (int dx = -pad; dx < pad + 1; dx++){\n          if (((y + dy) >= 0) && (( x + dx) >= 0) && ((y + dy) < height) && ((x + dx) < width)){\n            v += img.at<uchar>(y + dy, x + dx) * kernel[dy + pad][dx + pad];\n          }\n        }\n      }\n      v = fmax(v, 0);\n      v = fmin(v, 255);\n      out.at<uchar>(y, x) = (uchar)v;\n    }\n  }\n  return out;\n}\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // BGR -> Gray\n  cv::Mat gray = BGR2GRAY(img);\n\n  // sobel filter (vertical)\n  cv::Mat out_v = sobel_filter(gray, 3, false);\n\n  // sobel filter (horizontal)\n  cv::Mat out_h = sobel_filter(gray, 3, true);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer (vertical)\", out_v);\n  cv::imshow(\"answer (horizontal)\", out_h);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n \n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_15.cpp",
+    "images": [
+      "assets/images/question_015/imori.jpg",
+      "assets/images/question_015/answer_15_v.jpg",
+      "assets/images/question_015/answer_15_h.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_015/imori.jpg",
+      "answers_image/answer_15_v.jpg": "assets/images/question_015/answer_15_v.jpg",
+      "answers_image/answer_15_h.jpg": "assets/images/question_015/answer_15_h.jpg"
+    },
+    "source_readme": "Question_11_20/README.md"
+  },
+  {
+    "id": 16,
+    "title": "Prewitt滤波器",
+    "difficulty": "understand",
+    "readme": "使用$3\\times3$的Prewitt滤波器来进行滤波吧。\n\nPrewitt滤波器是用于边缘检测的一种滤波器，使用下式定义：\n\n纵向：\n$$\nK=\\left[\n\\begin{matrix}\n-1&-1&-1\\\\\n0&0&0\\\\\n1&1&1\n\\end{matrix}\n\\right]\n$$\n横向：\n$$\nK=\\left[\n\\begin{matrix}\n-1&0&-1\\\\\n-1&0&1\\\\\n-1&0&1\n\\end{matrix}\n\\right]\n$$\n\n| 输入 (imori.jpg) | 输出・纵向 (answers/answer_16_v.jpg) | 输出・横向 (answers/answer_16_h.jpg) |\n| :--------------: | :----------------------------------: | :----------------------------------: |\n|  ![](imori.jpg)  |  ![](answers_image/answer_16_v.jpg)  |  ![](answers_image/answer_16_h.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// BGR -> Gray\ncv::Mat BGR2GRAY(cv::Mat img){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  // each y, x\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      // BGR -> Gray\n      out.at<uchar>(y, x) = 0.2126 * (float)img.at<cv::Vec3b>(y, x)[2] \\\n        + 0.7152 * (float)img.at<cv::Vec3b>(y, x)[1] \\\n        + 0.0722 * (float)img.at<cv::Vec3b>(y, x)[0];\n    }\n  }\n  return out;\n}\n\n// prewitt filter\ncv::Mat prewitt_filter(cv::Mat img, int kernel_size, bool horizontal){\n  int height = img.rows;\n  int width = img.cols;\n  int channel = img.channels();\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  // prepare kernel\n  double kernel[kernel_size][kernel_size] = {{-1, -1, -1}, {0, 0, 0}, {1, 1, 1}};\n\n  if (horizontal){\n    kernel[0][1] = 0;\n    kernel[0][2] = 1;\n    kernel[1][0] = -1;\n    kernel[1][2] = 1;\n    kernel[2][0] = -1;\n    kernel[2][1] = 0;\n  }\n\n  int pad = floor(kernel_size / 2);\n\n  double v = 0;\n\n  // filtering  \n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      v = 0;\n      for (int dy = -pad; dy < pad + 1; dy++){\n        for (int dx = -pad; dx < pad + 1; dx++){\n          if (((y + dy) >= 0) && (( x + dx) >= 0) && ((y + dy) < height) && ((x + dx) < width)){\n            v += img.at<uchar>(y + dy, x + dx) * kernel[dy + pad][dx + pad];\n          }\n        }\n      }\n      v = fmax(v, 0);\n      v = fmin(v, 255);\n      out.at<uchar>(y, x) = (uchar)v;\n    }\n  }\n  return out;\n}\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // BGR -> Gray\n  cv::Mat gray = BGR2GRAY(img);\n\n  // prewitt filter (vertical)\n  cv::Mat out_v = prewitt_filter(gray, 3, false);\n\n  // prewitt filter (horizontal)\n  cv::Mat out_h = prewitt_filter(gray, 3, true);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer (vertical)\", out_v);\n  cv::imshow(\"answer (horizontal)\", out_h);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n \n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_16.cpp",
+    "images": [
+      "assets/images/question_016/imori.jpg",
+      "assets/images/question_016/answer_16_v.jpg",
+      "assets/images/question_016/answer_16_h.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_016/imori.jpg",
+      "answers_image/answer_16_v.jpg": "assets/images/question_016/answer_16_v.jpg",
+      "answers_image/answer_16_h.jpg": "assets/images/question_016/answer_16_h.jpg"
+    },
+    "source_readme": "Question_11_20/README.md"
+  },
+  {
+    "id": 17,
+    "title": "Laplacian滤波器",
+    "difficulty": "deep-read",
+    "readme": "使用Laplacian滤波器来进行滤波吧。\n\nLaplacian滤波器是对图像亮度进行二次微分从而检测边缘的滤波器。由于数字图像是离散的，$x$方向和$y$方向的一次微分分别按照以下式子计算：\n$$\nI_x(x,y)=\\frac{I(x+1,y)-I(x,y)}{(x+1)-x}=I(x+1,y)-I(x,y)\\\\\nI_y(x,y) =\\frac{I(x, y+1) - I(x,y)}{(y+1)-y}= I(x, y+1) - I(x,y)\n$$\n因此二次微分按照以下式子计算：\n$$\n\\begin{align*}\n&I_{xx}(x,y) \\\\\n=& \\frac{I_x(x,y) - I_x(x-1,y)}{(x+1)-x} \\\\\n=& I_x(x,y) - I_x(x-1,y)\\\\\n         =&[I(x+1, y) - I(x,y)] - [I(x, y) - I(x-1,y)]\\\\\n         =& I(x+1,y) - 2\\  I(x,y) + I(x-1,y)\n\\end{align*}\n$$\n同理：\n$$\nI_{yy}(x,y)=I(x,y+1)-2\\  I(x,y)+I(x,y-1)\n$$\n特此，Laplacian 表达式如下：\n$$\n\\begin{align*}\n&\\nabla^2\\ I(x,y)\\\\\n=&I_{xx}(x,y)+I_{yy}(x,y)\\\\\n=&I(x-1,y) + I(x,y-1) - 4 * I(x,y) + I(x+1,y) + I(x,y+1)\n\\end{align*}\n$$\n如果把这个式子表示为卷积核是下面这样的：\n$$\nK=\n\\left[\n\\begin{matrix}\n0&1&0\\\\\n1&-4&1\\\\\n0&1&0\n\\end{matrix}\n\\right]\n$$\n\n| 输入 (imori.jpg) |   输出(answers/answer_17.jpg)    |\n| :--------------: | :------------------------------: |\n|  ![](imori.jpg)  | ![](answers_image/answer_17.jpg) |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// BGR -> Gray\ncv::Mat BGR2GRAY(cv::Mat img){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  // each y, x\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      // BGR -> Gray\n      out.at<uchar>(y, x) = 0.2126 * (float)img.at<cv::Vec3b>(y, x)[2] \\\n        + 0.7152 * (float)img.at<cv::Vec3b>(y, x)[1] \\\n        + 0.0722 * (float)img.at<cv::Vec3b>(y, x)[0];\n    }\n  }\n  return out;\n}\n\n// laplacian filter\ncv::Mat laplacian_filter(cv::Mat img, int kernel_size){\n  int height = img.rows;\n  int width = img.cols;\n  int channel = img.channels();\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  // prepare kernel\n  double kernel[kernel_size][kernel_size] = {{0, 1, 0}, {1, -4, 1}, {0, 1, 0}};\n\n  int pad = floor(kernel_size / 2);\n\n  double v = 0;\n\n  // filtering  \n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      v = 0;\n      for (int dy = -pad; dy < pad + 1; dy++){\n        for (int dx = -pad; dx < pad + 1; dx++){\n          if (((y + dy) >= 0) && (( x + dx) >= 0) && ((y + dy) < height) && ((x + dx) < width)){\n            v += img.at<uchar>(y + dy, x + dx) * kernel[dy + pad][dx + pad];\n          }\n        }\n      }\n      v = fmax(v, 0);\n      v = fmin(v, 255);\n      out.at<uchar>(y, x) = (uchar)v;\n    }\n  }\n  return out;\n}\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // BGR -> Gray\n  cv::Mat gray = BGR2GRAY(img);\n\n  // laplacian filter\n  cv::Mat out = laplacian_filter(gray, 3);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n \n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_17.cpp",
+    "images": [
+      "assets/images/question_017/imori.jpg",
+      "assets/images/question_017/answer_17.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_017/imori.jpg",
+      "answers_image/answer_17.jpg": "assets/images/question_017/answer_17.jpg"
+    },
+    "source_readme": "Question_11_20/README.md"
+  },
+  {
+    "id": 20,
+    "title": "直方图",
+    "difficulty": "understand",
+    "readme": "使用`Matplotlib`来绘制`imori_dark.jpg`的直方图吧！\n\n直方图显示了不同数值的像素出现的次数。在`Matplotlib`中有`hist()`函数提供绘制直方图的接口。\n\n| 输入 (imori_dark.jpg) | 输出(answers_image/answer_20.png) |\n| :-------------------: | :-------------------------------: |\n|  ![](imori_dark.jpg)  | ![](answers_image/answer_20.png)  |",
+    "cpp": "",
+    "cpp_file": null,
+    "images": [
+      "assets/images/question_020/imori_dark.jpg",
+      "assets/images/question_020/answer_20.png"
+    ],
+    "image_map": {
+      "imori_dark.jpg": "assets/images/question_020/imori_dark.jpg",
+      "answers_image/answer_20.png": "assets/images/question_020/answer_20.png"
+    },
+    "source_readme": "Question_11_20/README.md"
+  },
+  {
+    "id": 21,
+    "title": "直方图归一化（ Histogram Normalization ）",
+    "difficulty": "understand",
+    "readme": "来归一化直方图吧。\n\n有时直方图会偏向一边。\n\n比如说，数据集中在$0$处（左侧）的图像全体会偏暗，数据集中在$255$处（右侧）的图像会偏亮。\n\n如果直方图有所偏向，那么其**[动态范围（ dynamic range ）](https://zh.wikipedia.org/wiki/%E5%8A%A8%E6%80%81%E8%8C%83%E5%9B%B4)**就会较低。\n\n为了使人能更清楚地看见图片，让直方图归一化、平坦化是十分必要的。\n\n这种归一化直方图的操作被称作**灰度变换（Grayscale Transformation）**。像素点取值范围从$[c,d]$转换到$[a,b]$的过程由下式定义。这回我们将`imori_dark.jpg`的灰度扩展到$[0, 255]$范围：\n$$\nx_{out}=\n\\begin{cases}\na& (\\text{if}\\quad x_{in}<c)\\\\\n\\frac{b-a}{d-c}\\ (x_{in}-c)+a&(\\text{else if}\\quad c\\leq x_{in}<d)\\\\\nb&(\\text{else})\n\\end{cases}\n$$\n\n| 输入 (imori_dark.jpg) |   输出 (answers/answer_21_1.jpg)   | 直方图(answers_image/answer_21_2.png) |\n| :-------------------: | :--------------------------------: | :-----------------------------------: |\n|  ![](imori_dark.jpg)  | ![](answers_image/answer_21_1.jpg) |  ![](answers_image/answer_21_2.png)   |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// histogram normalization\ncv::Mat histogram_normalization(cv::Mat img, int a, int b){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n  int channel = img.channels();\n\n  int c, d;\n  int val;\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC3);\n\n  // get [c, d]\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      for (int _c = 0; _c < channel; _c++){\n        val = (float)img.at<cv::Vec3b>(y, x)[_c];\n        c = fmin(c, val);\n        d = fmax(d, val);\n      }\n    }\n  }\n\n  // histogram transformation\n  for (int y = 0; y < height; y++){\n    for ( int x = 0; x < width; x++){\n      for ( int _c = 0; _c < 3; _c++){\n        val = img.at<cv::Vec3b>(y, x)[_c];\n        \n        if (val < a){\n          out.at<cv::Vec3b>(y, x)[_c] = (uchar)a;\n        }\n        else if (val <= b){\n          out.at<cv::Vec3b>(y, x)[_c] = (uchar)((b - a) / (d - c) * (val - c) + a);\n        }\n        else {\n          out.at<cv::Vec3b>(y, x)[_c] = (uchar)b;\n        }\n      }\n    }\n  }\n\n  return out;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori_dark.jpg\", cv::IMREAD_COLOR);\n\n  // histogram normalization\n  cv::Mat out = histogram_normalization(img, 0, 255);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n \n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_21.cpp",
+    "images": [
+      "assets/images/question_021/imori_dark.jpg",
+      "assets/images/question_021/answer_21_1.jpg",
+      "assets/images/question_021/answer_21_2.png"
+    ],
+    "image_map": {
+      "imori_dark.jpg": "assets/images/question_021/imori_dark.jpg",
+      "answers_image/answer_21_1.jpg": "assets/images/question_021/answer_21_1.jpg",
+      "answers_image/answer_21_2.png": "assets/images/question_021/answer_21_2.png"
+    },
+    "source_readme": "Question_21_30/README.md"
+  },
+  {
+    "id": 22,
+    "title": "直方图操作",
+    "difficulty": "understand",
+    "readme": "让直方图的平均值$m_0=128$，标准差$s_0=52$​吧！\n\n这里并不是变更直方图的动态范围，而是让直方图变得平坦。\n\n可以使用下式将平均值为$m$标准差为$s$的直方图变成平均值为$m_0$标准差为$s_0$的直方图：\n$$\nx_{out}=\\frac{s_0}{s}\\  (x_{in}-m)+m_0\n$$\n\n| 输入 (imori_dark.jpg) | 输出 (answers_image/answer_22_1.jpg) | 直方图(answers_image//answer_22_2.png) |\n| :-------------------: | :----------------------------------: | :------------------------------------: |\n|  ![](imori_dark.jpg)  |  ![](answers_image/answer_22_1.jpg)  |   ![](answers_image/answer_22_2.png)   |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// histogram transform\ncv::Mat histogram_transform(cv::Mat img, int m0, int s0){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n  int channel = img.channels();\n\n  // histogram transformation hyper-parameters\n  double m, s;\n  double sum = 0., squared_sum = 0.;\n  double val;\n\n  // output image\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC3);\n\n  // get sum\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      for (int c = 0; c < 3; c++){\n        val = (float)img.at<cv::Vec3b>(y, x)[c];\n        sum += val;\n        squared_sum += (val * val);\n      }\n    }\n  }\n\n  // get standard deviation\n  m = sum / (height * width * channel);\n  s = sqrt(squared_sum / (height * width * channel) - m * m);\n\n\n  // histogram transformation\n  for (int y = 0; y < height; y++){\n    for ( int x = 0; x < width; x++){\n      for ( int c = 0; c < 3; c++){\n        val = img.at<cv::Vec3b>(y, x)[c];\n        \n        out.at<cv::Vec3b>(y, x)[c] = (uchar)(s0 / s * (val - m) + m0);\n      }\n    }\n  }\n\n  return out;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori_dark.jpg\", cv::IMREAD_COLOR);\n\n  // histogram transform\n  cv::Mat out = histogram_transform(img, 128, 52);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n \n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_22.cpp",
+    "images": [
+      "assets/images/question_022/imori_dark.jpg",
+      "assets/images/question_022/answer_22_1.jpg",
+      "assets/images/question_022/answer_22_2.png"
+    ],
+    "image_map": {
+      "imori_dark.jpg": "assets/images/question_022/imori_dark.jpg",
+      "answers_image/answer_22_1.jpg": "assets/images/question_022/answer_22_1.jpg",
+      "answers_image/answer_22_2.png": "assets/images/question_022/answer_22_2.png"
+    },
+    "source_readme": "Question_21_30/README.md"
+  },
+  {
+    "id": 23,
+    "title": "直方图均衡化（ Histogram Equalization ）",
+    "difficulty": "understand",
+    "readme": "来让均匀化直方图吧！\n\n直方图均衡化是使直方图变得平坦的操作，是不需要计算上面的问题中的平均值、标准差等数据使直方图的值变得均衡的操作。\n\n均衡化操作由以下式子定义。$S$是总的像素数；$Z_{max}$是像素点的最大取值（在这里是$255$）；$h(z)$表示取值为$z$的累积分布函数：\n$$\nZ' = \\frac{Z_{max}}{S} \\  \\sum\\limits_{i=0}^z\\ h(i)\n$$\n\n| 输入 (imori.jpg) |   输出 (answers/answer_23_1.jpg)   | 直方图(answers_image/answer_23_2.png) |\n| :--------------: | :--------------------------------: | :-----------------------------------: |\n|  ![](imori.jpg)  | ![](answers_image/answer_23_1.jpg) |  ![](answers_image/answer_23_2.png)   |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n\n// histogram equalization\ncv::Mat histogram_equalization(cv::Mat img){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n  int channel = img.channels();\n\n  // output image\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC3);\n\n  // histogram equalization hyper-parameters\n  double Zmax = 255;\n  double hist[255];\n  double S = height * width * channel;\n  int val;\n  double hist_sum = 0;\n\n\n  // histogram initialization\n  for (int i = 0; i < 255; i++){\n     hist[i] = 0;\n  }\n\n  // get histogram sum\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      for (int c = 0; c < channel; c++){\n        val = (int)img.at<cv::Vec3b>(y, x)[c];\n        hist[val] ++;\n      }\n    }\n  }\n\n  // histogram equalization\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      for (int c = 0; c < channel; c++){\n        val = (int)img.at<cv::Vec3b>(y, x)[c];\n\n        // get histogram sum <= current pixel value\n        hist_sum = 0;\n        for (int l = 0; l < val; l++){\n          hist_sum += hist[l];\n        }\n        // assign equalized value\n        out.at<cv::Vec3b>(y, x)[c] = (uchar)(Zmax / S * hist_sum);\n      }\n    }\n  }\n\n  return out;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // histogram equalization\n  cv::Mat out = histogram_equalization(img);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n \n  return 0;\n}\n\n",
+    "cpp_file": "assets/codes/answer_23.cpp",
+    "images": [
+      "assets/images/question_023/imori.jpg",
+      "assets/images/question_023/answer_23_1.jpg",
+      "assets/images/question_023/answer_23_2.png"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_023/imori.jpg",
+      "answers_image/answer_23_1.jpg": "assets/images/question_023/answer_23_1.jpg",
+      "answers_image/answer_23_2.png": "assets/images/question_023/answer_23_2.png"
+    },
+    "source_readme": "Question_21_30/README.md"
+  },
+  {
+    "id": 25,
+    "title": "最邻近插值（ Nearest-neighbor Interpolation ）",
+    "difficulty": "understand",
+    "readme": "使用最邻近插值将图像放大$1.5$倍吧！\n\n最近邻插值在图像放大时补充的像素取最临近的像素的值。由于方法简单，所以处理速度很快，但是放大图像画质劣化明显。\n\n使用下面的公式放大图像吧！$I'$为放大后图像，$I$为放大前图像，$a$为放大率，方括号是四舍五入取整操作：\n\n<img src=\"assets/nni_fig.png\">\n$$\nI'(x,y) = I([\\frac{x}{a}], [\\frac{y}{a}])\n$$\n\n| 输入 (imori.jpg) | 输出 (answers_image/answer_25.jpg) |\n| :--------------: | :--------------------------------: |\n|  ![](imori.jpg)  |  ![](answers_image/answer_25.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// nearest nieghbor\ncv::Mat nearest_neighbor(cv::Mat img, double rx, double ry){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n  int channel = img.channels();\n\n\n  // get resized shape\n  int resized_width = (int)(width * rx);\n  int resized_height = (int)(height * ry);\n  int x_before, y_before;\n\n  // output image\n  cv::Mat out = cv::Mat::zeros(resized_height, resized_width, CV_8UC3);\n\n  // nearest neighbor interpolation\n  for (int y = 0; y < resized_height; y++){\n    y_before = (int)round(y / ry);\n    y_before = fmin(y_before, height - 1);\n    \n    for (int x = 0; x < resized_width; x++){\n      x_before = (int)round(x / rx);\n      x_before = fmin(x_before, width - 1);\n      \n      // assign pixel to new position\n      for (int c = 0; c < channel; c++){\n\t      out.at<cv::Vec3b>(y, x)[c] = img.at<cv::Vec3b>(y_before, x_before)[c];\n      }\n    }\n  }\n\n  return out;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // nearest neighbor\n  cv::Mat out = nearest_neighbor(img, 1.5, 1.5);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n \n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_25.cpp",
+    "images": [
+      "assets/images/question_025/imori.jpg",
+      "assets/images/question_025/answer_25.jpg",
+      "assets/images/question_025/nni_fig.png"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_025/imori.jpg",
+      "answers_image/answer_25.jpg": "assets/images/question_025/answer_25.jpg",
+      "assets/nni_fig.png": "assets/images/question_025/nni_fig.png"
+    },
+    "source_readme": "Question_21_30/README.md"
+  },
+  {
+    "id": 26,
+    "title": "双线性插值（ Bilinear Interpolation ）",
+    "difficulty": "understand",
+    "readme": "使用双线性插值将图像放大$1.5$倍吧！\n\n双线性插值考察$4$邻域的像素点，并根据距离设置权值。虽然计算量增大使得处理时间变长，但是可以有效抑制画质劣化。\n\n1. 放大后图像的座标$(x',y')$除以放大率$a$，可以得到对应原图像的座标$(\\lfloor \\frac{x'}{a}\\rfloor , \\lfloor \\frac{y'}{a}\\rfloor)$。\n\n2. 求原图像的座标$(\\lfloor \\frac{x'}{a}\\rfloor , \\lfloor \\frac{y'}{a}\\rfloor)$周围$4$邻域的座标$I(x,y)$，$I(x+1,y)$，$I(x,y+1)$，$I(x+1, y+1)$：\n   \n   <img src=\"assets/bli_fig.png\">\n   \n3. 分别求这4个点与$(\\frac{x'}{a}, \\frac{y'}{a})$的距离，根据距离设置权重：$w = \\frac{d}{\\sum\\ d}$\n\n4. 根据下式求得放大后图像$(x',y')$处的像素值：\n$$\nd_x = \\frac{x'}{a} - x\\\\\n  d_y = \\frac{y'}{a} - y\\\\\n  I'(x',y') = (1-d_x)\\  (1-d_y)\\  I(x,y) + d_x\\  (1-d_y)\\  I(x+1,y) + (1-d_x)\\  d_y\\  I(x,y+1) + d_x\\  d_y\\  I(x+1,y+1)\n$$\n| 输入 (imori.jpg) | 输出(answers_image/answer_26.jpg) |\n| :--------------: | :-------------------------------: |\n|  ![](imori.jpg)  | ![](answers_image/answer_26.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// bilinear\ncv::Mat bilinear(cv::Mat img, double rx, double ry){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n  int channel = img.channels();\n\n\n  // get resized shape\n  int resized_width = (int)(width * rx);\n  int resized_height = (int)(height * ry);\n  int x_before, y_before;\n  double dx, dy;\n  double val;\n\n  // output image\n  cv::Mat out = cv::Mat::zeros(resized_height, resized_width, CV_8UC3);\n\n  // bi-linear interpolation\n  for (int y = 0; y < resized_height; y++){\n    y_before = (int)floor(y / ry);\n    y_before = fmin(y_before, height - 1);\n    dy = y / ry - y_before;\n    \n    for (int x = 0; x < resized_width; x++){\n      x_before = (int)floor(x / rx);\n      x_before = fmin(x_before, width - 1);\n      dx = x / rx - x_before;\n      \n      // compute bi-linear\n      for (int c = 0; c < channel; c++){\n        val = (1. - dx) * (1. - dy) * img.at<cv::Vec3b>(y_before, x_before)[c] +\n          dx * (1. - dy) * img.at<cv::Vec3b>(y_before, x_before + 1)[c] +\n          (1. - dx) * dy * img.at<cv::Vec3b>(y_before + 1, x_before)[c] +\n          dx * dy * img.at<cv::Vec3b>(y_before + 1, x_before)[c];\n\n        // assign pixel to new position\n        out.at<cv::Vec3b>(y, x)[c] = (uchar)val;\n      }\n    }\n  }\n\n  return out;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // bilinear\n  cv::Mat out = bilinear(img, 1.5, 1.5);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n \n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_26.cpp",
+    "images": [
+      "assets/images/question_026/imori.jpg",
+      "assets/images/question_026/answer_26.jpg",
+      "assets/images/question_026/bli_fig.png"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_026/imori.jpg",
+      "answers_image/answer_26.jpg": "assets/images/question_026/answer_26.jpg",
+      "assets/bli_fig.png": "assets/images/question_026/bli_fig.png"
+    },
+    "source_readme": "Question_21_30/README.md"
+  },
+  {
+    "id": 27,
+    "title": "双三次插值（ Bicubic Interpolation ）",
+    "difficulty": "understand",
+    "readme": "使用双三次插值将图像放大$1.5$倍吧！\n\n双三次插值是双线性插值的扩展，使用邻域$16$像素进行插值。\n\n<img src=\"assets/bci_fig.png\">\n\n各自像素间的距离由下式决定：\n$$\n\\begin{align*}\nd_{x_1} = |\\frac{x'}{a\\  x} - (x-1)|\\quad \nd_{x_2} = |\\frac{x'}{a\\  x}- x| \\quad \nd_{x_3} = |\\frac{x'}{a\\  x}- (x+1)|\\quad \nd_{x_4} = |\\frac{x'}{a\\  x} - (x+2)|\\\\\nd_{y_1} = |\\frac{x'}{a\\  y} - (y-1)|\\quad \nd_{y_2} = |\\frac{x'}{a\\  y} - y| \\quad \nd_{y_3} = |\\frac{x'}{a\\  y} - (y+1)| \\quad \nd_{y_4} = |\\frac{x'}{a\\  y} - (y+2)|\n\\end{align*}\n$$\n权重由基于距离的函数取得。$a$在大部分时候取$-1$。大体上说，图中蓝色像素的距离$|t|\\leq 1$，绿色像素的距离$1<|t|\\leq 2$：\n$$\nh(t)=\n\\begin{cases}\n(a+2)\\ |t|^3 - (a+3)\\ |t|^2 + 1 &\\text{when}\\quad |t|\\leq 1  \\\\\na\\ |t|^3 - 5\\  a\\ |t|^2 + 8\\  a\\  |t| - 4\\  a&\\text{when}\\quad 1<|t|\\leq 2\\\\\n0&\\text{else}\n\\end{cases}\n$$\n利用上面得到的权重，通过下面的式子扩大图像。将每个像素与权重的乘积之和除以权重的和。\n$$\nI'(x', y')=\\frac{1}{\\sum\\limits_{j=1}^4\\ \\sum\\limits_{i=1}^4\\ h(d_{xi})\\ h(d_{yj})}\\ \\sum\\limits_{j=1}^4\\ \\sum\\limits_{i=1}^4\\ I(x+i-2,y+j-2)\\ h(d_{xi})\\ h(d_{yj})\n$$\n\n| 输入 (imori.jpg) | 输出 (answers_image/answer_27.jpg) |\n| :--------------: | :--------------------------------: |\n|  ![](imori.jpg)  |  ![](answers_image/answer_27.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n// weight function\ndouble h(double t){\n  double a = -1;\n  if (fabs(t) <= 1){\n    return (a + 2) * pow(fabs(t), 3) - (a + 3) * pow(fabs(t), 2) + 1;\n  } else if(fabs(t) <= 2){\n    return a * pow(fabs(t), 3) - 5 * a * pow(fabs(t), 2) + 8 * a * fabs(t) - 4 * a;\n  } \n  return 0;\n}\n\n// clip value [*, *] -> [min, max]\nint val_clip(int x, int min, int max){\n  return fmin(fmax(x, min), max);\n}\n\n\n// bicubic\ncv::Mat bicubic(cv::Mat img, double rx, double ry){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n  int channel = img.channels();\n\n\n  // get resized shape\n  int resized_width = (int)(width * rx);\n  int resized_height = (int)(height * ry);\n  int x_before, y_before;\n  double dx, dy, wx, wy, w_sum;\n  double val;\n  int _x, _y;\n\n  // output image\n  cv::Mat out = cv::Mat::zeros(resized_height, resized_width, CV_8UC3);\n\n  // bi-cubic interpolation\n  for (int y = 0; y < resized_height; y++){\n    dy = y / ry;\n    y_before = (int)floor(dy);\n    \n    for (int x = 0; x < resized_width; x++){\n      dx = x / rx;\n      x_before = (int)floor(dx);\n      \n      \n      for (int c = 0; c < channel; c++){\n        w_sum = 0;\n        val = 0;\n\n        // bi-cubic computation\n        for (int j = -1; j < 3; j++){\n          _y = val_clip(y_before + j, 0, height - 1);\n          wy = h(fabs(dy - _y));\n          \n          for (int i = -1; i < 3; i++){\n            _x = val_clip(x_before + i, 0, width - 1);\n            wx = h(fabs(dx - _x));\n            w_sum += wy * wx;\n            val += (double)img.at<cv::Vec3b>(_y, _x)[c] * wx * wy;\n          }\n        }\n\n\t      val /= w_sum;\n\n\t      val = val_clip(val, 0, 255);\n\n        // assign pixel to new position\n\t      out.at<cv::Vec3b>(y, x)[c] = (uchar)val;\n      }\n    }\n  }\n  return out;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // bicubic\n  cv::Mat out = bicubic(img, 1.5, 1.5);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n \n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_27.cpp",
+    "images": [
+      "assets/images/question_027/imori.jpg",
+      "assets/images/question_027/answer_27.jpg",
+      "assets/images/question_027/bci_fig.png"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_027/imori.jpg",
+      "answers_image/answer_27.jpg": "assets/images/question_027/answer_27.jpg",
+      "assets/bci_fig.png": "assets/images/question_027/bci_fig.png"
+    },
+    "source_readme": "Question_21_30/README.md"
+  },
+  {
+    "id": 28,
+    "title": "仿射变换（ Afine Transformations ）——平行移动",
+    "difficulty": "understand",
+    "readme": "利用仿射变换让图像在$x$方向上$+30$，在$y$方向上$-30$吧！\n\n仿射变换利用$3\\times3$的矩阵来进行图像变换。\n\n变换的方式有平行移动（问题二十八）、放大缩小（问题二十九）、旋转（问题三十）、倾斜（问题三十一）等。\n\n原图像记为$(x,y)$，变换后的图像记为$(x',y')$。\n\n图像放大缩小矩阵为下式：\n$$\n\\left(\n\\begin{matrix}\nx'\\\\\ny'\n\\end{matrix}\n\\right)=\n\\left(\n\\begin{matrix}\na&b\\\\\nc&d\n\\end{matrix}\n\\right)\\ \n\\left(\n\\begin{matrix}\nx\\\\\ny\n\\end{matrix}\n\\right)\n$$\n另一方面，平行移动按照下面的式子计算：\n$$\n\\left(\n\\begin{matrix}\nx'\\\\\ny'\n\\end{matrix}\n\\right)=\n\\left(\n\\begin{matrix}\nx\\\\\ny\n\\end{matrix}\n\\right)+\n\\left(\n\\begin{matrix}\nt_x\\\\\nt_y\n\\end{matrix}\n\\right)\n$$\n把上面两个式子盘成一个：\n$$\n\\left(\n\\begin{matrix}\nx'\\\\\ny'\\\\\n1\n\\end{matrix}\n\\right)=\n\\left(\n\\begin{matrix}\na&b&t_x\\\\\nc&d&t_y\\\\\n0&0&1\n\\end{matrix}\n\\right)\\ \n\\left(\n\\begin{matrix}\nx\\\\\ny\\\\\n1\n\\end{matrix}\n\\right)\n$$\n但是在实际操作的过程中，如果一个一个地计算原图像的像素的话，处理后的像素可能没有在原图像中有对应的坐标。[^2]\n\n[^2]: 这句话原文是“処理後の画像で値が割り当てられない可能性がでてきてしまう。”直译大概是”处理后的图像可能没有被分配到值。“我也不知道该怎么翻译才好……你们看输出图像左下角黑色的那一块，就是这种没有被”分配“到的情况。\n\n因此，我们有必要对处理后的图像中各个像素进行仿射变换逆变换，取得变换后图像中的像素在原图像中的坐标。仿射变换的逆变换如下：\n$$\n\\left(\n\\begin{matrix}\nx\\\\\ny\n\\end{matrix}\n\\right)=\n\\frac{1}{a\\  d-b\\  c}\\ \n\\left(\n\\begin{matrix}\nd&-b\\\\\n-c&a\n\\end{matrix}\n\\right)\\  \n\\left(\n\\begin{matrix}\nx'\\\\\ny'\n\\end{matrix}\n\\right)-\n\\left(\n\\begin{matrix}\nt_x\\\\\nt_y\n\\end{matrix}\n\\right)\n$$\n这回的平行移动操作使用下面的式子计算。$t_x$和$t_y$是像素移动的距离。\n$$\n\\left(\n\\begin{matrix}\nx'\\\\\ny'\\\\\n1\n\\end{matrix}\n\\right)=\n\\left(\n\\begin{matrix}\n1&0&t_x\\\\\n0&1&t_y\\\\\n0&0&1\n\\end{matrix}\n\\right)\\  \n\\left(\n\\begin{matrix}\nx\\\\\ny\\\\\n1\n\\end{matrix}\n\\right)\n$$\n\n| 输入 (imori.jpg) | 输出 (answers_image/answer_28.jpg) |\n| :--------------: | :--------------------------------: |\n|  ![](imori.jpg)  |  ![](answers_image/answer_28.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// affine\ncv::Mat affine(cv::Mat img, double a, double b, double c, double d, double tx, double ty){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n  int channel = img.channels();\n\n  // get detriment\n  double det = a * d - b * c;\n\n  // Resize width and height\n  int resized_width = (int)(width * a);\n  int resized_height = (int)(height * d);\n\n  // other parameters\n  int x_before, y_before;\n  double dx, dy, wx, wy, w_sum;\n  double val;\n  int _x, _y;\n\n  // output\n  cv::Mat out = cv::Mat::zeros(resized_height, resized_width, CV_8UC3);\n\n  // Affine transformation\n  for (int y = 0; y < resized_height; y++){    \n    for (int x = 0; x < resized_width; x++){\n\n      // get original position x\n      x_before = (int)((d * x - b * y) / det - tx);\n\n      if ((x_before < 0) || (x_before >= width)){\n        continue;\n      }\n\n      // get original position y\n      y_before = (int)((-c * x + a * y) / det - ty);\n\n      if ((y_before < 0) || (y_before >= height)){\n        continue;\n      }\n\n      // assign pixel to new position\n      for (int c = 0; c < channel; c++){\n        out.at<cv::Vec3b>(y, x)[c] = img.at<cv::Vec3b>(y_before, x_before)[c];\n      }\n    }\n  }\n\n  return out;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // affine\n  cv::Mat out = affine(img, 1, 0, 0, 1, 30, -30);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n \n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_28.cpp",
+    "images": [
+      "assets/images/question_028/imori.jpg",
+      "assets/images/question_028/answer_28.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_028/imori.jpg",
+      "answers_image/answer_28.jpg": "assets/images/question_028/answer_28.jpg"
+    },
+    "source_readme": "Question_21_30/README.md"
+  },
+  {
+    "id": 29,
+    "title": "仿射变换（ Afine Transformations ）——放大缩小",
+    "difficulty": "understand",
+    "readme": "1. 使用仿射变换，将图片在$x$方向上放大$1.3$倍，在$y$方向上缩小至原来的$\\frac{4}{5}$。\n2. 在上面的条件下，同时在$x$方向上向右平移$30$（$+30$），在$y$方向上向上平移$30$（$-30$）。\n\n| 输入 (imori.jpg) | 输出 (1) (answers_image/answer_29_1.jpg) | 输出 (2) (answers_image/answer_29_2.jpg) |\n| :--------------: | :--------------------------------------: | :--------------------------------------: |\n|  ![](imori.jpg)  |    ![](answers_image/answer_29_1.jpg)    |    ![](answers_image/answer_29_2.jpg)    |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// affine\ncv::Mat affine(cv::Mat img, double a, double b, double c, double d, double tx, double ty){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n  int channel = img.channels();\n\n  // get detriment\n  double det = a * d - b * c;\n\n  // Resize width and height\n  int resized_width = (int)(width * a);\n  int resized_height = (int)(height * d);\n\n  // other parameters\n  int x_before, y_before;\n  double dx, dy, wx, wy, w_sum;\n  double val;\n  int _x, _y;\n\n  // output\n  cv::Mat out = cv::Mat::zeros(resized_height, resized_width, CV_8UC3);\n\n  // Affine transformation\n  for (int y = 0; y < resized_height; y++){    \n    for (int x = 0; x < resized_width; x++){\n\n      // get original position x\n      x_before = (int)((d * x - b * y) / det - tx);\n\n      if ((x_before < 0) || (x_before >= width)){\n        continue;\n      }\n\n      // get original position y\n      y_before = (int)((-c * x + a * y) / det - ty);\n\n      if ((y_before < 0) || (y_before >= height)){\n        continue;\n      }\n\n      // assign pixel to new position\n      for (int c = 0; c < channel; c++){\n        out.at<cv::Vec3b>(y, x)[c] = img.at<cv::Vec3b>(y_before, x_before)[c];\n      }\n    }\n  }\n\n  return out;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // affine\n  cv::Mat out = affine(img, 1.3, 0, 0, 0.8, 30, -30);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n \n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_29.cpp",
+    "images": [
+      "assets/images/question_029/imori.jpg",
+      "assets/images/question_029/answer_29_1.jpg",
+      "assets/images/question_029/answer_29_2.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_029/imori.jpg",
+      "answers_image/answer_29_1.jpg": "assets/images/question_029/answer_29_1.jpg",
+      "answers_image/answer_29_2.jpg": "assets/images/question_029/answer_29_2.jpg"
+    },
+    "source_readme": "Question_21_30/README.md"
+  },
+  {
+    "id": 30,
+    "title": "仿射变换（ Afine Transformations ）——旋转",
+    "difficulty": "understand",
+    "readme": "1. 使用仿射变换，逆时针旋转$30$度。\n2. 使用仿射变换，逆时针旋转$30$度并且能让全部图像显现（也就是说，单纯地做仿射变换会让图片边缘丢失，这一步中要让图像的边缘不丢失，需要耗费一些工夫）。\n\n使用下面的式子进行逆时针方向旋转$A$度的仿射变换：\n$$\n\\left(\n\\begin{matrix}\nx'\\\\\ny'\\\\\n1\n\\end{matrix}\n\\right)=\n\\left(\n\\begin{matrix}\n\\cos(A)&-\\sin(A)&t_x\\\\\n\\sin(A)&\\cos(A)&t_y\\\\\n0&0&1\n\\end{matrix}\n\\right)\\ \n\\left(\n\\begin{matrix}\nx\\\\\ny\\\\\n1\n\\end{matrix}\n\\right)\n$$\n\n| 输入 (imori.jpg) | 输出 (1) (answers_image/answer_30_1.jpg) | 输出 (2) (answers_image/answer_30_2.jpg) |\n| :--------------: | :--------------------------------------: | :--------------------------------------: |\n|  ![](imori.jpg)  |    ![](answers_image/answer_30_1.jpg)    |    ![](answers_image/answer_30_2.jpg)    |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n// affine\ncv::Mat affine(cv::Mat img, double a, double b, double c, double d, double tx, double ty, double theta){\n  // get height and width\n  int width = img.cols;\n  int height = img.rows;\n  int channel = img.channels();\n\n  // get detriment\n  double det = a * d - b * c;\n\n  if (theta != 0){\n    // Affine parameters\n    double rad = theta / 180. * M_PI;\n    a = std::cos(rad);\n    b = - std::sin(rad);\n    c = std::sin(rad);\n    d = std::cos(rad);\n    tx = 0;\n    ty = 0;\n\n    double det = a * d - b * c;\n\n    // center transition\n    double cx = width / 2.;\n    double cy = height / 2.;\n    double new_cx = (d * cx - b * cy) / det;\n    double new_cy = (- c * cx + a * cy) / det;\n    tx = new_cx - cx;\n    ty = new_cy - cy;\n  }\n\n  // Resize width and height\n  int resized_width = (int)(width * a);\n  int resized_height = (int)(height * d);\n  \n  if (theta != 0) {\n    resized_width = (int)(width);\n    resized_height = (int)(height);\n  }\n\n  // other parameters\n  int x_before, y_before;\n  double dx, dy, wx, wy, w_sum;\n  double val;\n  int _x, _y;\n\n  // output\n  cv::Mat out = cv::Mat::zeros(resized_height, resized_width, CV_8UC3);\n\n  // Affine transformation\n  for (int y = 0; y < resized_height; y++){    \n    for (int x = 0; x < resized_width; x++){\n\n      // get original position x\n      x_before = (int)((d * x - b * y) / det - tx);\n\n      if ((x_before < 0) || (x_before >= width)){\n        continue;\n      }\n\n      // get original position y\n      y_before = (int)((-c * x + a * y) / det - ty);\n\n      if ((y_before < 0) || (y_before >= height)){\n        continue;\n      }\n\n      // assign pixel to new position\n      for (int c = 0; c < channel; c++){\n        out.at<cv::Vec3b>(y, x)[c] = img.at<cv::Vec3b>(y_before, x_before)[c];\n      }\n    }\n  }\n\n  return out;\n}\n\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // affine\n  cv::Mat out = affine(img, 1, 0, 0, 1, 0, 0, -30);\n  \n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer\", out);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n \n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_30.cpp",
+    "images": [
+      "assets/images/question_030/imori.jpg",
+      "assets/images/question_030/answer_30_1.jpg",
+      "assets/images/question_030/answer_30_2.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_030/imori.jpg",
+      "answers_image/answer_30_1.jpg": "assets/images/question_030/answer_30_1.jpg",
+      "answers_image/answer_30_2.jpg": "assets/images/question_030/answer_30_2.jpg"
+    },
+    "source_readme": "Question_21_30/README.md"
+  },
+  {
+    "id": 43,
+    "title": "Canny 边缘检测：第三步——滞后阈值",
+    "difficulty": "deep-read",
+    "readme": "在这里我们进行 Canny 边缘检测的最后一步。\n\n[^TODO]: 这里原文中英文有错误\n\n在这里我们将通过设置高阈值（HT：high threshold）和低阈值（LT：low threshold）来将梯度幅值二值化。\n\n1. 如果梯度幅值$edge(x,y)$大于高阈值的话，令$edge(x,y)=255$；\n2. 如果梯度幅值$edge(x,y)$小于低阈值的话，令$edge(x,y)=0$；\n3. 如果梯度幅值$edge(x,y)$介于高阈值和低阈值之间并且周围8邻域内有比高阈值高的像素点存在，令$edge(x,y)=255$；\n\n在这里，我们使高阈值为100，低阈值为20。顺便说一句，阈值的大小需要边看结果边调整。\n\n上面的算法就是Canny边缘检测算法了。\n\n| 输入 (imori.jpg) | 输出 (answers_image/answer_43.jpg) |\n| :--------------: | :--------------------------------: |\n|  ![](imori.jpg)  |  ![](answers_image/answer_43.jpg)  |",
+    "cpp": "#include <opencv2/core.hpp>\n#include <opencv2/highgui.hpp>\n#include <iostream>\n#include <math.h>\n\n\n// RGB to Gray scale\ncv::Mat BGR2GRAY(cv::Mat img){\n  // get height and width\n  int height = img.rows;\n  int width = img.cols;\n  int channel = img.channels();\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n  \n  // BGR -> Gray\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      out.at<uchar>(y, x) = (int)((float)img.at<cv::Vec3b>(y, x)[0] * 0.0722 + \\\n\t\t\t\t  (float)img.at<cv::Vec3b>(y, x)[1] * 0.7152 + \\\n\t\t\t\t  (float)img.at<cv::Vec3b>(y, x)[2] * 0.2126);\n    }\n  }\n  return out;\n}\n\nfloat clip(float value, float min, float max){\n  return fmin(fmax(value, 0), 255);\n}\n\n// gaussian filter\ncv::Mat gaussian_filter(cv::Mat img, double sigma, int kernel_size){\n  int height = img.rows;\n  int width = img.cols;\n  int channel = img.channels();\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC3);\n  if (channel == 1) {\n    out = cv::Mat::zeros(height, width, CV_8UC1);\n  }\n\n  // prepare kernel\n  int pad = floor(kernel_size / 2);\n  int _x = 0, _y = 0;\n  double kernel_sum = 0;\n  \n  // get gaussian kernel\n  float kernel[kernel_size][kernel_size];\n\n  for (int y = 0; y < kernel_size; y++){\n    for (int x = 0; x < kernel_size; x++){\n      _y = y - pad;\n      _x = x - pad; \n      kernel[y][x] = 1 / (2 * M_PI * sigma * sigma) * exp( - (_x * _x + _y * _y) / (2 * sigma * sigma));\n      kernel_sum += kernel[y][x];\n    }\n  }\n\n  for (int y = 0; y < kernel_size; y++){\n    for (int x = 0; x < kernel_size; x++){\n      kernel[y][x] /= kernel_sum;\n    }\n  }\n\n  // filtering\n  double v = 0;\n  \n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      // for BGR\n      if (channel == 3){\n        for (int c = 0; c < channel; c++){\n          v = 0;\n          for (int dy = -pad; dy < pad + 1; dy++){\n            for (int dx = -pad; dx < pad + 1; dx++){\n              if (((x + dx) >= 0) && ((y + dy) >= 0) && ((x + dx) < width) && ((y + dy) < height)){\n                v += (double)img.at<cv::Vec3b>(y + dy, x + dx)[c] * kernel[dy + pad][dx + pad];\n              }\n            }\n          }\n          out.at<cv::Vec3b>(y, x)[c] = (uchar)clip(v, 0, 255);\n        }\n      } else {\n        // for Gray\n        v = 0;\n        for (int dy = -pad; dy < pad + 1; dy++){\n          for (int dx = -pad; dx < pad + 1; dx++){\n            if (((x + dx) >= 0) && ((y + dy) >= 0) && ((x + dx) < width) && ((y + dy) < height)){\n              v += (double)img.at<uchar>(y + dy, x + dx) * kernel[dy + pad][dx + pad];\n            }\n          }\n        }\n        out.at<uchar>(y, x) = (uchar)clip(v, 0, 255);\n      }\n    }\n  }\n  return out;\n}\n\n// Sobel filter\ncv::Mat sobel_filter(cv::Mat img, int kernel_size, bool horizontal){\n  int height = img.rows;\n  int width = img.cols;\n  int channel = img.channels();\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  // prepare kernel\n  double kernel[kernel_size][kernel_size] = {{1, 2, 1}, {0, 0, 0}, {-1, -2, -1}};\n\n  if (horizontal){\n    kernel[0][1] = 0;\n    kernel[0][2] = -1;\n    kernel[1][0] = 2;\n    kernel[1][2] = -2;\n    kernel[2][0] = 1;\n    kernel[2][1] = 0;\n  }\n\n  int pad = floor(kernel_size / 2);\n\n  double v = 0;\n\n  // filtering  \n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      v = 0;\n      for (int dy = -pad; dy < pad + 1; dy++){\n        for (int dx = -pad; dx < pad + 1; dx++){\n          if (((y + dy) >= 0) && (( x + dx) >= 0) && ((y + dy) < height) && ((x + dx) < width)){\n            v += (double)img.at<uchar>(y + dy, x + dx) * kernel[dy + pad][dx + pad];\n          }\n        }\n      }\n      out.at<uchar>(y, x) = (uchar)clip(v, 0, 255);\n    }\n  }\n  return out;\n}\n\n// get edge\ncv::Mat get_edge(cv::Mat fx, cv::Mat fy){\n  // get height and width\n  int height = fx.rows;\n  int width = fx.cols;\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  double _fx, _fy;\n\n  for(int y = 0; y < height; y++){\n    for(int x = 0; x < width; x++){\n      _fx = (double)fx.at<uchar>(y, x);\n      _fy = (double)fy.at<uchar>(y, x);\n\n      out.at<uchar>(y, x) = (uchar)clip(sqrt(_fx * _fx + _fy * _fy), 0, 255);\n    }\n  }\n\n  return out;\n}\n\n// get angle\ncv::Mat get_angle(cv::Mat fx, cv::Mat fy){\n  // get height and width\n  int height = fx.rows;\n  int width = fx.cols;\n\n  // prepare output\n  cv::Mat out = cv::Mat::zeros(height, width, CV_8UC1);\n\n  double _fx, _fy;\n  double angle;\n\n  for(int y = 0; y < height; y++){\n    for(int x = 0; x < width; x++){\n      _fx = fmax((double)fx.at<uchar>(y, x), 0.000001);\n      _fy = (double)fy.at<uchar>(y, x);\n\n      angle = atan2(_fy, _fx);\n      angle = angle / M_PI * 180;\n\n      if(angle < -22.5){\n        angle = 180 + angle;\n      } else if (angle >= 157.5) {\n        angle = angle - 180;\n      }\n\n      //std::cout << angle << \" \" ;\n\n      // quantization\n      if (angle <= 22.5){\n        out.at<uchar>(y, x) = 0;\n      } else if (angle <= 67.5){\n        out.at<uchar>(y, x) = 45;\n      } else if (angle <= 112.5){\n        out.at<uchar>(y, x) = 90;\n      } else {\n        out.at<uchar>(y, x) = 135;\n      }\n    }\n  }\n\n  return out;\n}\n\n\n// non maximum suppression\ncv::Mat non_maximum_suppression(cv::Mat angle, cv::Mat edge){\n  int height = angle.rows;\n  int width = angle.cols;\n  int channel = angle.channels();\n\n  int dx1, dx2, dy1, dy2;\n  int now_angle;\n\n  // prepare output\n  cv::Mat _edge = cv::Mat::zeros(height, width, CV_8UC1);\n\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      now_angle = angle.at<uchar>(y, x);\n      // angle condition\n      if (now_angle == 0){\n        dx1 = -1;\n        dy1 = 0;\n        dx2 = 1;\n        dy2 = 0;\n      } else if(now_angle == 45) {\n        dx1 = -1;\n        dy1 = 1;\n        dx2 = 1;\n        dy2 = -1;\n      } else if(now_angle == 90){\n        dx1 = 0;\n        dy1 = -1;\n        dx2 = 0;\n        dy2 = 1;\n      } else {\n        dx1 = -1;\n        dy1 = -1;\n        dx2 = 1;\n        dy2 = 1;\n      }\n\n      if (x == 0){\n        dx1 = fmax(dx1, 0);\n        dx2 = fmax(dx2, 0);\n      }\n      if (x == (width - 1)){\n        dx1 = fmin(dx1, 0);\n        dx2 = fmin(dx2, 0);\n      }\n      if (y == 0){\n        dy1 = fmax(dy1, 0);\n        dy2 = fmax(dy2, 0);\n      }\n      if (y == (height - 1)){\n        dy1 = fmin(dy1, 0);\n        dy2 = fmin(dy2, 0);\n      }\n\n      // if pixel is max among adjuscent pixels, pixel is kept\n      if (fmax(fmax(edge.at<uchar>(y, x), edge.at<uchar>(y + dy1, x + dx1)), edge.at<uchar>(y + dy2, x + dx2)) == edge.at<uchar>(y, x)) {\n        _edge.at<uchar>(y, x) = edge.at<uchar>(y, x);\n      }\n    }\n  }\n\n  return _edge;\n}\n\n// histerisis\ncv::Mat histerisis(cv::Mat edge, int HT, int LT){\n  int height = edge.rows;\n  int width = edge.cols;\n  int channle = edge.channels();\n\n  // prepare output\n  cv::Mat _edge = cv::Mat::zeros(height, width, CV_8UC1);\n\n  int now_pixel;\n\n  for (int y = 0; y < height; y++){\n    for (int x = 0; x < width; x++){\n      // get pixel\n      now_pixel = edge.at<uchar>(y, x);\n\n      // if pixel >= HT\n      if (now_pixel >= HT){\n        _edge.at<uchar>(y, x) = 255;\n      } \n      // if LT < pixel < HT\n      else if (now_pixel > LT) {\n        for (int dy = -1; dy < 2; dy++){\n          for (int dx = -1; dx < 2; dx++){\n            // if 8 nearest neighbor pixel >= HT\n            if (edge.at<uchar>(fmin(fmax(y + dy, 0), 255), fmin(fmax(x + dx, 0), 255)) >= HT){\n              _edge.at<uchar>(y, x) = 255;\n            }\n          }\n        }\n      }\n    }\n  }\n  return _edge;\n}\n\n\n// Canny\ncv::Mat Canny(cv::Mat img){\n  // BGR -> Gray\n  cv::Mat gray = BGR2GRAY(img);\n\n  // gaussian filter\n  cv::Mat gaussian = gaussian_filter(gray, 1.4, 5);\n\n  // sobel filter (vertical)\n  cv::Mat fy = sobel_filter(gaussian, 3, false);\n\n  // sobel filter (horizontal)\n  cv::Mat fx = sobel_filter(gaussian, 3, true);\n\n  // get edge\n  cv::Mat edge = get_edge(fx, fy);\n\n  // get angle\n  cv::Mat angle = get_angle(fx, fy);\n\n  // edge non-maximum suppression\n  edge = non_maximum_suppression(angle, edge);\n\n  // histerisis\n  edge = histerisis(edge, 50, 20);\n\n  return edge;\n}\n\nint main(int argc, const char* argv[]){\n  // read image\n  cv::Mat img = cv::imread(\"imori.jpg\", cv::IMREAD_COLOR);\n\n  // Canny\n  cv::Mat edge = Canny(img);\n\n  //cv::imwrite(\"out.jpg\", out);\n  cv::imshow(\"answer(edge)\", edge);\n  cv::waitKey(0);\n  cv::destroyAllWindows();\n\n  return 0;\n}\n",
+    "cpp_file": "assets/codes/answer_43.cpp",
+    "images": [
+      "assets/images/question_043/imori.jpg",
+      "assets/images/question_043/answer_43.jpg"
+    ],
+    "image_map": {
+      "imori.jpg": "assets/images/question_043/imori.jpg",
+      "answers_image/answer_43.jpg": "assets/images/question_043/answer_43.jpg"
+    },
+    "source_readme": "Question_41_50/README.md"
+  }
+];
