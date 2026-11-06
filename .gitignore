@@ -41,3 +41,10 @@ __pycache__/
 .vs/
 .vscode/ipch/
 *.code-workspace
+
+# Task5 study build products and local metadata
+study/**/.git/
+study/**/.DS_Store
+study/**/.ipynb_checkpoints/
+study/**/backup-before-*/
+study/算法代码/q*/q[0-9]*
