@@ -89,7 +89,7 @@ int main(int argc, char** argv)
             else if (requestedFrame < 0 && matchesFrame != shownFrame) requestedFrame = matchesFrame;
             if (requestedFrame >= 0) {
                 seekRequested = capture.set(cv::CAP_PROP_POS_FRAMES,
-                                            std::max(0, requestedFrame - 3));
+                                            std::max(0, requestedFrame - 8));
             }
         }
         std::vector<int> currentControls;
@@ -102,8 +102,8 @@ int main(int argc, char** argv)
                 armorRects.clear();
                 previousArmorForCurrentFrame.clear();
                 olderArmorForCurrentFrame.clear();
-                // 跳帧后先处理目标帧前的三帧，恢复配对所需的时间记录。
-                for (int frame = std::max(0, requestedFrame - 3);
+                // 跳帧后先处理目标帧前的八帧，让配对选择稳定到与顺序播放一致。
+                for (int frame = std::max(0, requestedFrame - 8);
                      frame < requestedFrame; ++frame) {
                     cv::Mat warmupImage, warmupMask, warmupLightMask, warmupMatch;
                     std::vector<LightBar> warmupLights;

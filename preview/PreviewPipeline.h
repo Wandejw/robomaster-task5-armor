@@ -284,6 +284,8 @@ inline void preview_match(const cv::Mat& lightMask, cv::Mat& lightMatch,
             candidates.push_back({i, j, loss, armorRect});
         }
     }
+    reward_lower_pair(candidates, lights);
+    reward_previous_triplet_side(candidates, lights.size(), previousArmorRects);
     candidates.erase(std::remove_if(candidates.begin(), candidates.end(),
         [](const Candidate& candidate) {
             const float area = candidate.rect.size.area();

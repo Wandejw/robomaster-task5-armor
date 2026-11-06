@@ -188,6 +188,8 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
         pairCandidates.push_back({i, j, losescore, armorRect});
     }  
 }
+reward_lower_pair(pairCandidates, lights);
+reward_previous_triplet_side(pairCandidates, lights.size(), previousArmorRects);
 // 大框按配对损失分数筛选，超大框直接排除。
 pairCandidates.erase(std::remove_if(pairCandidates.begin(), pairCandidates.end(),
     [](const PairCandidate& candidate) {
