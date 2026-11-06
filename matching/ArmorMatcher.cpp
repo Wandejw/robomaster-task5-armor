@@ -1,6 +1,7 @@
 #include "ArmorMatcher.h"
 #include "../common/CompactLightCandidate.h"
 #include "../common/PairContinuity.h"
+#include "../common/PairSelection.h"
 #include <algorithm>  // std::min、std::max
 #include <cmath>  // std::abs 的浮点数版本
 #include <opencv2/imgproc.hpp>  // cv::line
@@ -202,19 +203,9 @@ std::sort(pairCandidates.begin(), pairCandidates.end(),
           {
               return a.loss < b.loss;
           });
-// 使用一个布尔向量记录每个灯条是否已经被使用，初始值为 false
-std::vector<bool> used(lights.size(), false);
-for (const PairCandidate& candidate : pairCandidates)
+for (std::size_t index : select_unique_pairs(pairCandidates, lights.size()))
 {
-    // 如果任意一根灯条已经被使用，则跳过当前组合
-    if (used[candidate.first] || used[candidate.second])
-    {
-        continue;
-    }
-
-    // 标记当前组合的两根灯条为已使用
-    used[candidate.first] = true;
-    used[candidate.second] = true;
+    const PairCandidate& candidate = pairCandidates[index];
     // 将装甲板候选矩形加入结果列表 armorRects
     armorRects.push_back(candidate.rect);
 // 绘制装甲板轮廓到 lightMatch 上

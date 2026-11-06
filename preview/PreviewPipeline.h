@@ -2,6 +2,7 @@
 
 #include "DetectionTypes.h"
 #include "PairContinuity.h"
+#include "PairSelection.h"
 #include "CompactLightCandidate.h"
 #include <opencv2/imgproc.hpp>
 #include <algorithm>
@@ -292,10 +293,8 @@ inline void preview_match(const cv::Mat& lightMask, cv::Mat& lightMatch,
         }), candidates.end());
     std::sort(candidates.begin(), candidates.end(),
               [](const Candidate& a, const Candidate& b) { return a.loss < b.loss; });
-    std::vector<bool> used(lights.size(), false);
-    for (const Candidate& candidate : candidates) {
-        if (used[candidate.first] || used[candidate.second]) continue;
-        used[candidate.first] = used[candidate.second] = true;
+    for (std::size_t index : select_unique_pairs(candidates, lights.size())) {
+        const Candidate& candidate = candidates[index];
         armorRects.push_back(candidate.rect);
         cv::Point2f vertices[4];
         candidate.rect.points(vertices);
