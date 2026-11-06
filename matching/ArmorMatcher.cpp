@@ -77,8 +77,12 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
         float shorterLength = std::min(lights[i].length, lights[j].length);
         float longerLength  = std::max(lights[i].length, lights[j].length);
         float lengthRatio   = shorterLength / longerLength;
+        const bool redShortLongPair = lights[i].isRed && shorterLength >= 10.0f &&
+            shorterLength <= 19.0f && longerLength >= 20.0f &&
+            longerLength <= 35.0f && lengthRatio >= 0.39f;
         // 排除灯条长度差异过大的情况
-        if (lengthRatio < 0.5f)
+        if (lengthRatio < (lights[i].isRed && longerLength < 12.0f ? 0.44f : 0.45f) &&
+            !redShortLongPair)
         {
             continue;
         }
@@ -99,20 +103,28 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
 // 从第一根灯条中心指向第二根灯条中心
         cv::Point2f centerDelta = lights[j].center - lights[i].center;
 // 沿长边方向的错位：点积得到投影长度
-        float alongDistance = std::abs(centerDelta.dot(direction));
+        float alongFirst = std::abs(centerDelta.dot(direction));
+        float alongSecond = std::abs(centerDelta.dot(secondDirection));
+        cv::Point2f pairDirection = alongFirst <= alongSecond ? direction : secondDirection;
+        float alongDistance = std::min(alongFirst, alongSecond);
 // 垂直长边方向的间距：二维叉积的绝对值
-        float sideDistance = std::abs(direction.x * centerDelta.y -direction.y * centerDelta.x);
+        float sideDistance = std::abs(pairDirection.x * centerDelta.y -
+                                      pairDirection.y * centerDelta.x);
 // 换算成相对于平均灯条长度的比例
        float alongRatio = alongDistance / averageLength;
        float sideRatio  = sideDistance / averageLength;
-        
-// 侧向间距太小或太大：排除近似共线及距离过远的组合
-       if (sideRatio < 1.27f || sideRatio > 4.6f)
+        // 常规配对仍要求长度比 0.5；短灯条与较远的同伴允许放宽到 0.45。
+        if (lengthRatio < 0.46f &&
+            !(averageLength < 10.0f && sideRatio > 4.7f) &&
+            !(averageLength < 12.0f && sideRatio <= 1.6f) &&
+            !(lights[i].isRed && averageLength < 12.0f &&
+              lengthRatio >= 0.44f && sideRatio <= 5.8f) &&
+            !redShortLongPair)
         {
             continue;
         }
         
-        // 满足条件后，生成装甲板候选矩形。
+        // 先生成候选矩形，用上一帧位置判断是否允许较近的灯条继续配对。
         // 取两根灯条各自的四个顶点
        cv::Point2f firstPoints[4];
        cv::Point2f secondPoints[4];
@@ -132,8 +144,21 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
        cv::RotatedRect armorRect = cv::minAreaRect(allPoints);
         bool matchesPrevious = matches_previous_pair(
             armorRect, previousArmorRects, olderArmorRects, 0.7f, 0.5f);
-        bool normalGeometry = directionSimilarity >= 0.88f && alongRatio <= 1.45f;
-        bool continuedGeometry = matchesPrevious && directionSimilarity >= 0.75f && alongRatio <= 2.0f;
+        // 横向间距超过上限，或新候选过近时，排除该组合。
+        float maxSideRatio = averageLength >= 12.0f && matchesPrevious ? 6.0f :
+                             lights[i].isRed && averageLength < 12.0f ? 5.8f :
+                             averageLength < 10.0f && lengthRatio < 0.5f ? 5.0f : 4.7f;
+        float minSideRatio = matchesPrevious || averageLength >= 10.5f ? 0.70f : 1.15f;
+        if (sideRatio > maxSideRatio || sideRatio < minSideRatio)
+        {
+            continue;
+        }
+        // 间距较宽的候选若纵向错位明显，通常是跨目标的斜配对；延续奖励也不能放行。
+        float maxAlongRatio = sideRatio >= 3.7f ? 1.10f : 1.70f;
+        bool normalGeometry = directionSimilarity >= 0.88f && alongRatio <= maxAlongRatio;
+        bool continuedGeometry = matchesPrevious &&
+                                 directionSimilarity >= (averageLength < 10.0f ? 0.65f : 0.75f) &&
+                                 alongRatio <= (sideRatio >= 3.7f ? 1.10f : 1.50f);
         if (!normalGeometry && !continuedGeometry)
         {
             continue;
@@ -141,10 +166,35 @@ for (std::size_t i = 0; i < lights.size(); ++i)// 遍历每个灯条
         double losescore = alongRatio * 3 + std::abs(sideRatio - 2.90f) * 3 +
                            std::abs(directionSimilarity - 1.0f) * 5 +
                            std::abs(lengthRatio - 1.0f) * 2;
-        if (matchesPrevious) losescore -= 3.0;
+        // 短灯条紧挨时容易被误当成一组；降低这种窄配对的优先级。
+        if (averageLength < 8.0f && sideRatio < 2.2f) losescore += 9.0;
+        else if (sideRatio < 1.6f && averageLength < 11.5f) losescore += 4.5;
+        if (matchesPrevious)
+            losescore -= 5.0 + (averageLength >= 12.0f ? 4.0 : 0.0) +
+                         (sideRatio < 1.2f && averageLength >= 13.0f ? 1.0 : 0.0);
+        // 同一高度若有灯条夹在两端之间，优先选择相邻灯条配对，减少交叉黄框。
+        if (averageLength >= 10.0f) {
+            float left = std::min(lights[i].center.x, lights[j].center.x);
+            float right = std::max(lights[i].center.x, lights[j].center.x);
+            for (std::size_t mid = 0; mid < lights.size(); ++mid) {
+                if (mid == i || mid == j || lights[mid].redOnly) continue;
+                if (lights[mid].center.x > left + 2.0f &&
+                    lights[mid].center.x < right - 2.0f &&
+                    std::abs(lights[mid].center.y - armorRect.center.y) < averageLength * 2.0f)
+                    losescore += 6.0;
+            }
+        }
         pairCandidates.push_back({i, j, losescore, armorRect});
     }  
 }
+// 大框按配对损失分数筛选，超大框直接排除。
+pairCandidates.erase(std::remove_if(pairCandidates.begin(), pairCandidates.end(),
+    [](const PairCandidate& candidate) {
+        const float area = candidate.rect.size.area();
+        return area >= 4500.0f ||
+               (area >= 3200.0f && candidate.loss > 2.0) ||
+               (area >= 2500.0f && area < 3200.0f && candidate.loss > 6.0);
+    }), pairCandidates.end());
 // 对 pairCandidates 按照损失分数进行升序排序，损失分数越低的组合越优先考虑
 // 使用 lambda 表达式作为比较函数，比较两个 PairCandidate 的 loss 成员
 std::sort(pairCandidates.begin(), pairCandidates.end(),
